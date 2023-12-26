@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import ninjabrainbot.data.datalock.IModificationLock;
 import ninjabrainbot.data.divine.BuriedTreasure;
+import ninjabrainbot.data.divine.FirstPortal;
 import ninjabrainbot.data.divine.Fossil;
 import ninjabrainbot.data.endereye.IThrow;
 import ninjabrainbot.data.endereye.Throw;
@@ -26,6 +27,7 @@ public class ClipboardReader implements Runnable {
 
 	private IModificationLock modificationLock;
 	private ObservableProperty<IThrow> whenNewThrowInputed;
+	private ObservableProperty<FirstPortal> whenNewFirstPortalInputed;
 	private ObservableProperty<BuriedTreasure> whenNewBuriedTreasureInputed;
 	private ObservableProperty<Fossil> whenNewFossilInputed;
 
@@ -36,6 +38,7 @@ public class ClipboardReader implements Runnable {
 		lastClipboardString = "";
 		forceReadLater = new AtomicBoolean(false);
 		whenNewThrowInputed = new ObservableProperty<IThrow>();
+		whenNewFirstPortalInputed = new ObservableProperty<FirstPortal>();
 		whenNewBuriedTreasureInputed = new ObservableProperty<BuriedTreasure>();
 		whenNewFossilInputed = new ObservableProperty<Fossil>();
 	}
@@ -46,6 +49,10 @@ public class ClipboardReader implements Runnable {
 
 	public ISubscribable<IThrow> whenNewThrowInputed() {
 		return whenNewThrowInputed;
+	}
+
+	public ISubscribable<FirstPortal> whenNewFirstPortalInputed() {
+		return whenNewFirstPortalInputed;
 	}
 
 	public ISubscribable<BuriedTreasure> whenNewBuriedTreasureInputed() {
@@ -90,6 +97,10 @@ public class ClipboardReader implements Runnable {
 	}
 
 	private void onClipboardUpdated(String clipboard) {
+		final FirstPortal fp = FirstPortal.parseF3C(clipboard);
+		if (fp != null) {
+			whenNewFirstPortalInputed.notifySubscribers(fp);
+		}
 		final IThrow t = Throw.parseF3C(clipboard, preferences.crosshairCorrection.get(), modificationLock);
 		if (t != null) {
 			whenNewThrowInputed.notifySubscribers(t);

@@ -7,11 +7,7 @@ import ninjabrainbot.data.calculator.ICalculatorResult;
 import ninjabrainbot.data.calculator.ResultType;
 import ninjabrainbot.data.datalock.IModificationLock;
 import ninjabrainbot.data.datalock.LockableField;
-import ninjabrainbot.data.divine.BuriedTreasure;
-import ninjabrainbot.data.divine.DivineContext;
-import ninjabrainbot.data.divine.DivineResult;
-import ninjabrainbot.data.divine.Fossil;
-import ninjabrainbot.data.divine.IDivineContext;
+import ninjabrainbot.data.divine.*;
 import ninjabrainbot.data.endereye.IThrow;
 import ninjabrainbot.data.endereye.IThrowSet;
 import ninjabrainbot.data.endereye.ThrowSet;
@@ -65,7 +61,7 @@ public class DataState implements IDataState, IDisposable {
 		playerPos.set(null);
 		blindResult.set(null);
 		divineResult.set(null);
-		divineContext.clear();
+		divineContext.reset();
 		updateResultType();
 	}
 
@@ -116,6 +112,10 @@ public class DataState implements IDataState, IDisposable {
 			divineResult.set(calculator.divine());
 		}
 		updateResultType();
+	}
+
+	void setFirstPortal(FirstPortal fp) {
+		divineContext.setFirstPortal(fp);
 	}
 
 	void setBuriedTreasure(BuriedTreasure bt) {

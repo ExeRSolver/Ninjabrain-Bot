@@ -1,5 +1,7 @@
 package ninjabrainbot.data.statistics;
 
+import java.util.Arrays;
+
 public class DiscretizedDensity {
 
 	private double[] discretizedDensity; // values for each "sector"
@@ -52,8 +54,13 @@ public class DiscretizedDensity {
 		for (int i = 0; i < discretizedDensity.length; i++) {
 			integral += discretizedDensity[i] * length / discretizedDensity.length;
 		}
-		for (int i = 0; i < discretizedDensity.length; i++) {
-			discretizedDensity[i] /= integral;
+		if (integral != 0) {
+			for (int i = 0; i < discretizedDensity.length; i++) {
+				discretizedDensity[i] /= integral;
+			}
+		}
+		else {
+            Arrays.fill(discretizedDensity, 1.0 / discretizedDensity.length);
 		}
 	}
 

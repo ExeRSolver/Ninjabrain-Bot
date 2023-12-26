@@ -12,19 +12,21 @@ import ninjabrainbot.util.Coords;
 
 public class DivineContext implements IDivineContext {
 
-	private IBuriedTreasureSimulator buriedTreasureSimulator;
+	private DivineMonteCarloSimulator simulator;
 
 	private DiscretizedDensity discretizedAngularDensity;
 
 	private ObservableField<Fossil> fossil;
+	private ObservableField<FirstPortal> firstPortal;
 	private ObservableField<BuriedTreasure> buriedTreasure;
 	private ObservableProperty<DivineContext> whenPhiDistributionChanged;
 
 	public DivineContext(IModificationLock modificationLock) {
 		fossil = new LockableField<Fossil>(modificationLock);
 		buriedTreasure = new LockableField<BuriedTreasure>(modificationLock);
+		firstPortal = new LockableField<FirstPortal>(modificationLock);
 		discretizedAngularDensity = new DiscretizedDensity(0, 2.0 * Math.PI);
-		buriedTreasureSimulator = new BuriedTreasureMonteCarloSimulator();
+		simulator = new DivineMonteCarloSimulator();
 		whenPhiDistributionChanged = new ObservableProperty<>();
 	}
 
@@ -35,12 +37,21 @@ public class DivineContext implements IDivineContext {
 
 	@Override
 	public void reset() {
-		setFossil(null);
+		fossil.set(null);
+		buriedTreasure.set(null);
+		firstPortal.set(null);
+		simulator.reset();
+		onChanged();
 	}
 
 	@Override
 	public double relativeDensity() {
 		return fossil.get() == null ? 1.0 : (16.0 / 3.0);
+	}
+
+	@Override
+	public ISubscribable<FirstPortal> whenFirstPortalChanged() {
+		return firstPortal;
 	}
 
 	@Override
@@ -59,24 +70,34 @@ public class DivineContext implements IDivineContext {
 	}
 
 	public void setFossil(Fossil f) {
-		fossil.set(f);
+		if (!f.equals(fossil.get())) {
+			System.out.println("Added fossil: " + f.x);
+			simulator.removeDivineObject(fossil.get());
+			simulator.addDivineObject(f);
+			fossil.set(f);
+			onChanged();
+		}
+	}
+
+	public void setFirstPortal(FirstPortal fp) {
+		System.out.println("Added first portal: " + fp.orientation);
+		simulator.removeDivineObject(firstPortal.get());
+		simulator.addDivineObject(fp);
+		firstPortal.set(fp);
 		onChanged();
 	}
 
 	public void setBuriedTreasure(BuriedTreasure bt) {
-		buriedTreasure.set(bt);
-		onChanged();
-	}
-
-	public void clear() {
-		fossil.set(null);
-		buriedTreasure.set(null);
-		onChanged();
+		if (simulator.addDivineObject(bt)) {
+			System.out.println("Added buried treasure: " + bt.x + " " + bt.z);
+			buriedTreasure.set(bt);
+			onChanged();
+		}
 	}
 
 	@Override
 	public boolean hasDivine() {
-		return fossil.get() != null || buriedTreasure.get() != null;
+		return fossil.get() != null || buriedTreasure.get() != null || firstPortal.get() != null;
 	}
 
 	public double getDensityAtAngleBeforeSnapping(double phi) {
@@ -118,39 +139,16 @@ public class DivineContext implements IDivineContext {
 	}
 
 	private void onChanged() {
-		if (!hasDivine())
-			discretizedAngularDensity.reset(1);
-		else if (buriedTreasure.get() != null)
-			recalculateDensityBuriedTreasureOnly();
-		else
-			recalculateDensityFossilOnly();
-		whenPhiDistributionChanged.notifySubscribers(this);
-	}
-
-	private void recalculateDensityBuriedTreasureOnly() {
 		discretizedAngularDensity.reset(256 * 3);
-		buriedTreasureSimulator.setBuriedTreasure(buriedTreasure.get());
-
-		for (int i = 0; i < 1000000; i++) {
-			double phi = buriedTreasureSimulator.nextAngle();
-			addDensityThreeStrongholds(phi, 1);
+		if (hasDivine()) {
+			System.out.println("Updating " + simulator.divineObjects.size() + " divine objects");
+			for (int i = 0; i < 100000; i++) {
+				double phi = simulator.nextAngle();
+				addDensityThreeStrongholds(phi, 1);
+			}
 		}
 		discretizedAngularDensity.normalize();
-		System.out.println(buriedTreasure.get().x);
-		System.out.println(buriedTreasure.get().z);
-		System.out.println("recalculated");
-	}
-
-	private void recalculateDensityFossilOnly() {
-		discretizedAngularDensity.reset(16 * 3);
-		int angleIndex = -4 + fossil.get().x;
-		if (angleIndex < 0) {
-			angleIndex += 16;
-		}
-		double sectorPhiMin = 2.0 * Math.PI * ((angleIndex) / 16.0);
-		double sectorPhiMax = 2.0 * Math.PI * ((angleIndex + 1) / 16.0);
-		addDensityThreeStrongholds(sectorPhiMin, sectorPhiMax, 1.0);
-		discretizedAngularDensity.normalize();
+		whenPhiDistributionChanged.notifySubscribers(this);
 	}
 
 	private void addDensityThreeStrongholds(double phi, double density) {
@@ -159,23 +157,6 @@ public class DivineContext implements IDivineContext {
 				phi -= 2 * Math.PI;
 			discretizedAngularDensity.addDensity(phi, 1.0);
 			phi += 2.0 / 3.0 * Math.PI;
-		}
-	}
-
-	private void addDensityThreeStrongholds(double minPhi, double maxPhi, double density) {
-		for (int i = 0; i < 3; i++) {
-			if (minPhi > 2 * Math.PI)
-				minPhi -= 2 * Math.PI;
-			if (maxPhi > 2 * Math.PI)
-				maxPhi -= 2 * Math.PI;
-			if (maxPhi >= minPhi) {
-				discretizedAngularDensity.addDensity(minPhi, maxPhi, 1.0);
-			} else {
-				discretizedAngularDensity.addDensity(minPhi, 2 * Math.PI, 1.0);
-				discretizedAngularDensity.addDensity(0, maxPhi, 1.0);
-			}
-			minPhi += 2.0 / 3.0 * Math.PI;
-			maxPhi += 2.0 / 3.0 * Math.PI;
 		}
 	}
 

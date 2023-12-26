@@ -12,6 +12,8 @@ public interface IDivineContext {
 
 	public void reset();
 
+	public ISubscribable<FirstPortal> whenFirstPortalChanged();
+
 	public ISubscribable<BuriedTreasure> whenBuriedTreasureChanged();
 
 	public ISubscribable<Fossil> whenFossilChanged();

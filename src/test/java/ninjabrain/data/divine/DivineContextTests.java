@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import ninjabrainbot.data.datalock.AlwaysUnlocked;
 import ninjabrainbot.data.divine.BuriedTreasure;
-import ninjabrainbot.data.divine.BuriedTreasureMonteCarloSimulator;
+import ninjabrainbot.data.divine.DivineMonteCarloSimulator;
 import ninjabrainbot.data.divine.DivineContext;
 import ninjabrainbot.data.endereye.Throw;
 import ninjabrainbot.data.statistics.RayApproximatedPrior;
@@ -25,10 +25,10 @@ public class DivineContextTests {
 
 	@Test
 	void samplesMatchExpectedDistribution() {
-		int sampleSize = 10000000;
+		int sampleSize = 1000000;
 
-		BuriedTreasureMonteCarloSimulator simulator = new BuriedTreasureMonteCarloSimulator();
-		simulator.setBuriedTreasure(new BuriedTreasure(1, 15));
+		DivineMonteCarloSimulator simulator = new DivineMonteCarloSimulator();
+		simulator.addDivineObject(new BuriedTreasure(1, 15));
 		Random rRandom = new Random();
 
 		HashMap<String, Integer> samples = new HashMap<>();

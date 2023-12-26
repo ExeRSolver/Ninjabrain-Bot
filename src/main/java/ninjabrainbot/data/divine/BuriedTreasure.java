@@ -1,17 +1,14 @@
 package ninjabrainbot.data.divine;
 
-public class BuriedTreasure {
+public class BuriedTreasure implements IDivinable {
 
 	public final int x, z;
+	public final long salt;
 
 	public BuriedTreasure(int x, int z) {
 		this.x = x;
 		this.z = z;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		return obj instanceof Fossil && ((Fossil) obj).x == x;
+		this.salt = x * 341873128712L + z * 132897987541L + 10387320L;
 	}
 
 	/**
@@ -34,6 +31,17 @@ public class BuriedTreasure {
 		} catch (NullPointerException | NumberFormatException e) {
 			return null;
 		}
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return obj instanceof BuriedTreasure && ((BuriedTreasure) obj).x == x && ((BuriedTreasure) obj).z == z;
+	}
+
+	@Override
+	public boolean seedSatisfiesDivineCondition(long seed) {
+		this.random.setSeed(seed + this.salt);
+		return random.nextFloat() < 0.01;
 	}
 
 }

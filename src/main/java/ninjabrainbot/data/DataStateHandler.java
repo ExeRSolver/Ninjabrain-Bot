@@ -7,6 +7,7 @@ import ninjabrainbot.data.datalock.ILock;
 import ninjabrainbot.data.datalock.IModificationLock;
 import ninjabrainbot.data.datalock.ModificationLock;
 import ninjabrainbot.data.divine.BuriedTreasure;
+import ninjabrainbot.data.divine.FirstPortal;
 import ninjabrainbot.data.divine.Fossil;
 import ninjabrainbot.data.endereye.IThrow;
 import ninjabrainbot.data.endereye.StandardStdProfile;
@@ -145,6 +146,12 @@ public class DataStateHandler implements IDataStateHandler, IDisposable {
 		}
 	}
 
+	private synchronized void setFirstPortal(FirstPortal fp) {
+		try (ILock lock = modificationLock.acquireWritePermission()) {
+			dataState.setFirstPortal(fp);
+		}
+	}
+
 	private synchronized void setBuriedTreasure(BuriedTreasure bt) {
 		try (ILock lock = modificationLock.acquireWritePermission()) {
 			dataState.setBuriedTreasure(bt);
@@ -174,6 +181,11 @@ public class DataStateHandler implements IDataStateHandler, IDisposable {
 	@Override
 	public void addThrowStream(ISubscribable<IThrow> stream) {
 		stream.subscribe(t -> onNewThrow(t));
+	}
+
+	@Override
+	public void addFirstPortalStream(ISubscribable<FirstPortal> stream) {
+		stream.subscribe(fp -> setFirstPortal(fp));
 	}
 
 	@Override
