@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class Progress {
 
-	private static ProgressKeeper pk = new ProgressKeeper();
+	private static final ProgressKeeper pk = new ProgressKeeper();
 	private static Splash splash;
 
 	public static void init(Splash splash) {
@@ -29,9 +29,9 @@ public class Progress {
 
 class ProgressKeeper {
 
-	ArrayList<String> labels;
-	ArrayList<Float> progressWhenStarted;
-	ArrayList<Float> progressWhenComplete;
+	final ArrayList<String> labels;
+	final ArrayList<Float> progressWhenStarted;
+	final ArrayList<Float> progressWhenComplete;
 
 	String currentName = "";
 	float currentSubTaskProgress = 0;

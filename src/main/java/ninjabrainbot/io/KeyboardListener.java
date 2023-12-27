@@ -7,7 +7,6 @@ import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.NativeHookException;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
-
 import ninjabrainbot.io.preferences.BooleanPreference;
 import ninjabrainbot.io.preferences.HotkeyPreference;
 
@@ -16,10 +15,10 @@ public class KeyboardListener implements NativeKeyListener {
 	public static boolean registered = false;
 	public static KeyboardListener instance;
 
-	private BooleanPreference useAltClipboardReader;
+	private final BooleanPreference useAltClipboardReader;
 
 	BiConsumer<Integer, Integer> consumer;
-	ClipboardReader clr;
+	final ClipboardReader clr;
 	boolean f3Held = false;
 
 	public static void preInit() {
@@ -84,7 +83,7 @@ public class KeyboardListener implements NativeKeyListener {
 		}
 		for (HotkeyPreference h : HotkeyPreference.hotkeys) {
 			if (h.getCode() == e.getRawCode() && (h.getModifier() & e.getModifiers()) == h.getModifier()) {
-				h.execute(e);
+				h.execute();
 			}
 		}
 		// Alt clipboard reader

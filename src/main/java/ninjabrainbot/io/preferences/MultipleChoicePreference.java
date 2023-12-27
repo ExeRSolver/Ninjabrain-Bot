@@ -6,21 +6,21 @@ import ninjabrainbot.event.Modifiable;
 
 public class MultipleChoicePreference<T extends IMultipleChoicePreferenceDataType> extends Modifiable<T> {
 
-	IPreferenceSource pref;
+	final IPreferenceSource pref;
 
-	String key;
+	final String key;
 	IMultipleChoicePreferenceDataType value;
-	IMultipleChoicePreferenceDataType[] choices;
+	final IMultipleChoicePreferenceDataType[] choices;
 
-	HashMap<Integer, IMultipleChoicePreferenceDataType> id2choice;
-	HashMap<IMultipleChoicePreferenceDataType, Integer> choice2id;
+	final HashMap<Integer, IMultipleChoicePreferenceDataType> id2choice;
+	final HashMap<IMultipleChoicePreferenceDataType, Integer> choice2id;
 
 	public MultipleChoicePreference(String key, IMultipleChoicePreferenceDataType defaultValue, int[] ids, IMultipleChoicePreferenceDataType[] choices, IPreferenceSource pref) {
 		this.pref = pref;
 		this.key = key;
 		this.choices = choices;
-		id2choice = new HashMap<Integer, IMultipleChoicePreferenceDataType>();
-		choice2id = new HashMap<IMultipleChoicePreferenceDataType, Integer>();
+		id2choice = new HashMap<>();
+		choice2id = new HashMap<>();
 		for (int i = 0; i < ids.length; i++) {
 			id2choice.put(ids[i], choices[i]);
 			choice2id.put(choices[i], ids[i]);

@@ -3,64 +3,39 @@ package ninjabrainbot.io;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import ninjabrainbot.data.datalock.IModificationLock;
-import ninjabrainbot.data.divine.BuriedTreasure;
-import ninjabrainbot.data.divine.FirstPortal;
-import ninjabrainbot.data.divine.Fossil;
-import ninjabrainbot.data.endereye.IThrow;
-import ninjabrainbot.data.endereye.Throw;
-import ninjabrainbot.data.endereye.Throw1_12;
-import ninjabrainbot.event.ISubscribable;
-import ninjabrainbot.event.ObservableProperty;
+import ninjabrainbot.event.IObservable;
+import ninjabrainbot.event.ObservableField;
 import ninjabrainbot.io.preferences.NinjabrainBotPreferences;
 
-public class ClipboardReader implements Runnable {
+public class ClipboardReader implements IClipboardProvider, Runnable {
 
-	private NinjabrainBotPreferences preferences;
+	private final NinjabrainBotPreferences preferences;
 
-	Clipboard clipboard;
+	final Clipboard clipboard;
 	String lastClipboardString;
 
-	private AtomicBoolean forceReadLater;
+	private final AtomicBoolean forceReadLater;
 
-	private IModificationLock modificationLock;
-	private ObservableProperty<IThrow> whenNewThrowInputed;
-	private ObservableProperty<FirstPortal> whenNewFirstPortalInputed;
-	private ObservableProperty<BuriedTreasure> whenNewBuriedTreasureInputed;
-	private ObservableProperty<Fossil> whenNewFossilInputed;
+	final ObservableField<String> clipboardString;
 
-	public ClipboardReader(NinjabrainBotPreferences preferences, IModificationLock modificationLock) {
+	public ClipboardReader(NinjabrainBotPreferences preferences) {
 		this.preferences = preferences;
-		this.modificationLock = modificationLock;
 		clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		clipboardString = new ObservableField<>(null, true);
 		lastClipboardString = "";
 		forceReadLater = new AtomicBoolean(false);
-		whenNewThrowInputed = new ObservableProperty<IThrow>();
-		whenNewFirstPortalInputed = new ObservableProperty<FirstPortal>();
-		whenNewBuriedTreasureInputed = new ObservableProperty<BuriedTreasure>();
-		whenNewFossilInputed = new ObservableProperty<Fossil>();
+	}
+
+	public IObservable<String> clipboardText() {
+		return clipboardString;
 	}
 
 	public void forceRead() {
 		forceReadLater.set(true);
-	}
-
-	public ISubscribable<IThrow> whenNewThrowInputed() {
-		return whenNewThrowInputed;
-	}
-
-	public ISubscribable<FirstPortal> whenNewFirstPortalInputed() {
-		return whenNewFirstPortalInputed;
-	}
-
-	public ISubscribable<BuriedTreasure> whenNewBuriedTreasureInputed() {
-		return whenNewBuriedTreasureInputed;
-	}
-
-	public ISubscribable<Fossil> whenNewFossilInputed() {
-		return whenNewFossilInputed;
 	}
 
 	@Override
@@ -76,16 +51,15 @@ public class ClipboardReader implements Runnable {
 					e.printStackTrace();
 				}
 			}
-			if (read) { // && clipboard.isDataFlavorAvailable(DataFlavor.stringFlavor)
-				String clipboardString = null;
-				try {
+			String clipboardString = null;
+			try {
+				if (read)
 					clipboardString = (String) clipboard.getData(DataFlavor.stringFlavor);
-				} catch (Exception e) {
-				}
-				if (clipboardString != null && !lastClipboardString.equals(clipboardString)) {
-					onClipboardUpdated(clipboardString);
-					lastClipboardString = clipboardString;
-				}
+			} catch (UnsupportedFlavorException | IllegalStateException | IOException ignored) {
+			}
+			if (clipboardString != null && !lastClipboardString.equals(clipboardString)) {
+				onClipboardUpdated(clipboardString);
+				lastClipboardString = clipboardString;
 			}
 			// Sleep 0.1 seconds
 			try {
@@ -97,30 +71,7 @@ public class ClipboardReader implements Runnable {
 	}
 
 	private void onClipboardUpdated(String clipboard) {
-		final FirstPortal fp = FirstPortal.parseF3C(clipboard);
-		if (fp != null) {
-			whenNewFirstPortalInputed.notifySubscribers(fp);
-		}
-		final IThrow t = Throw.parseF3C(clipboard, preferences.crosshairCorrection.get(), modificationLock);
-		if (t != null) {
-			whenNewThrowInputed.notifySubscribers(t);
-			return;
-		}
-
-		final IThrow t2 = Throw1_12.parseF3C(clipboard, preferences.crosshairCorrection.get(), modificationLock);
-		if (t2 != null) {
-			whenNewThrowInputed.notifySubscribers(t);
-			return;
-		}
-		final BuriedTreasure bt = BuriedTreasure.parseF3I(clipboard);
-		if (bt != null) {
-			whenNewBuriedTreasureInputed.notifySubscribers(bt);
-		}
-
-		final Fossil f = Fossil.parseF3I(clipboard);
-		if (f != null) {
-			whenNewFossilInputed.notifySubscribers(f);
-		}
+		clipboardString.set(clipboard);
 	}
 
 }

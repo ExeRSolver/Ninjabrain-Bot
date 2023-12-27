@@ -2,12 +2,12 @@ package ninjabrainbot.gui.style;
 
 import java.util.HashMap;
 
-import ninjabrainbot.io.preferences.MultipleChoicePreferenceDataTypes.SizeSetting;
+import ninjabrainbot.io.preferences.enums.SizeSetting;
 import ninjabrainbot.util.I18n;
 
 public abstract class SizePreference {
 
-	public String name;
+	public final String name;
 	public int TEXT_SIZE_TITLE_LARGE;
 	public int TEXT_SIZE_TITLE_SMALL;
 	public int TEXT_SIZE_MEDIUM;

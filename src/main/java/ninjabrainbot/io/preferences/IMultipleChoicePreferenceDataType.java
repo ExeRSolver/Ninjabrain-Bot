@@ -1,7 +1,9 @@
 package ninjabrainbot.io.preferences;
 
-public interface IMultipleChoicePreferenceDataType {
+import ninjabrainbot.gui.components.preferences.IMultipleChoiceOption;
 
-	public String choiceName();
+public interface IMultipleChoicePreferenceDataType extends IMultipleChoiceOption {
+
+	String choiceName();
 
 }

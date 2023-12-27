@@ -3,54 +3,57 @@ package ninjabrainbot.gui.buttons;
 import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.util.Objects;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.Timer;
 
 import ninjabrainbot.Main;
+import ninjabrainbot.event.DisposeHandler;
 import ninjabrainbot.event.IDisposable;
-import ninjabrainbot.event.SubscriptionHandler;
 import ninjabrainbot.gui.frames.NotificationsFrame;
 import ninjabrainbot.gui.style.StyleManager;
-import ninjabrainbot.io.UpdateChecker;
-import ninjabrainbot.io.VersionURL;
+import ninjabrainbot.gui.style.theme.WrappedColor;
 import ninjabrainbot.io.preferences.NinjabrainBotPreferences;
+import ninjabrainbot.io.updatechecker.IUpdateChecker;
+import ninjabrainbot.io.updatechecker.VersionURL;
 
 public class NotificationsButton extends TitleBarButton implements IDisposable {
 
-	private static final long serialVersionUID = -352194555884422473L;
-
-	StyleManager styleManager;
-	NotificationsFrame notificationsFrame;
-	NinjabrainBotPreferences preferences;
+	private final NotificationsFrame notificationsFrame;
+	private final NinjabrainBotPreferences preferences;
+	private final IUpdateChecker updateChecker;
 
 	// Pulsing
 	int i;
 	Timer timer;
-	Color start, end;
-	int duration = 1000;
+	WrappedColor start, end;
+	final int duration = 1000;
 
-	SubscriptionHandler sh;
+	final DisposeHandler sh;
 
-	public NotificationsButton(StyleManager styleManager, JFrame parent, NinjabrainBotPreferences preferences) {
-		super(styleManager, new ImageIcon(Main.class.getResource("/notifications_icon.png")));
-		this.styleManager = styleManager;
+	public NotificationsButton(StyleManager styleManager, JFrame parent, NinjabrainBotPreferences preferences, IUpdateChecker updateChecker) {
+		super(styleManager, new ImageIcon(Objects.requireNonNull(Main.class.getResource("/notifications_icon.png"))));
 		this.preferences = preferences;
+		this.updateChecker = updateChecker;
+		start = styleManager.currentTheme.COLOR_STRONGEST;
+		end = new WrappedColor();
+		end.set(new Color(200, 200, 0));
 		addActionListener(p -> toggleNotificationsWindow(parent));
 		setVisible(false);
 		notificationsFrame = new NotificationsFrame(styleManager, preferences);
 		// Subscriptions
-		sh = new SubscriptionHandler();
-		sh.add(preferences.checkForUpdates.whenModified().subscribe(b -> onUpdatesEnabledChanged(b)));
+		sh = new DisposeHandler();
+		sh.add(preferences.checkForUpdates.whenModified().subscribeEDT(this::onUpdatesEnabledChanged));
 		if (preferences.checkForUpdates.get()) {
-			UpdateChecker.check(url -> setURL(url));
+			updateChecker.check(this::setURL);
 		}
 	}
 
 	private void onUpdatesEnabledChanged(boolean enabled) {
 		if (enabled)
-			UpdateChecker.check(url -> setURL(url));
+			updateChecker.check(this::setURL);
 		setVisible(enabled && hasURL());
 	}
 
@@ -64,10 +67,10 @@ public class NotificationsButton extends TitleBarButton implements IDisposable {
 	}
 
 	private Color getInterpolatedColor(float t) {
-		int r = (int) (end.getRed() * t + start.getRed() * (1.0f - t));
-		int g = (int) (end.getGreen() * t + start.getGreen() * (1.0f - t));
-		int b = (int) (end.getBlue() * t + start.getBlue() * (1.0f - t));
-		int a = (int) (end.getAlpha() * t + start.getAlpha() * (1.0f - t));
+		int r = (int) (end.color().getRed() * t + start.color().getRed() * (1.0f - t));
+		int g = (int) (end.color().getGreen() * t + start.color().getGreen() * (1.0f - t));
+		int b = (int) (end.color().getBlue() * t + start.color().getBlue() * (1.0f - t));
+		int a = (int) (end.color().getAlpha() * t + start.color().getAlpha() * (1.0f - t));
 		return new Color(r, g, b, a);
 	}
 
@@ -77,11 +80,6 @@ public class NotificationsButton extends TitleBarButton implements IDisposable {
 		int b = (int) (end.getBlue() * t + start.getBlue() * (1.0f - t));
 		int a = (int) (end.getAlpha() * t + start.getAlpha() * (1.0f - t));
 		return new Color(r, g, b, a);
-	}
-
-	public void setColors(final Color backgroundColor, final Color hoverColor) {
-		this.start = backgroundColor;
-		this.end = getInterpolatedColor(this.start, Color.YELLOW, 0.3f);
 	}
 
 	@Override

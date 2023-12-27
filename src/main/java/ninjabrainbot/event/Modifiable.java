@@ -2,7 +2,7 @@ package ninjabrainbot.event;
 
 public class Modifiable<T> implements IModifiable<T> {
 
-	private ObservableProperty<T> whenModified;
+	private final ObservableProperty<T> whenModified;
 
 	public Modifiable() {
 		whenModified = new ObservableProperty<T>();
@@ -15,10 +15,6 @@ public class Modifiable<T> implements IModifiable<T> {
 
 	protected void notifySubscribers(T value) {
 		whenModified.notifySubscribers(value);
-	}
-
-	protected int subscriberCount() {
-		return whenModified.subscriberCount();
 	}
 
 }

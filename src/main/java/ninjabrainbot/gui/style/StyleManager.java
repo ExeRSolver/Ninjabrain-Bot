@@ -7,17 +7,24 @@ import java.awt.font.FontRenderContext;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
+
+import javax.swing.SwingUtilities;
 
 import ninjabrainbot.Main;
 import ninjabrainbot.gui.components.ThemedComponent;
 import ninjabrainbot.gui.frames.ThemedDialog;
 import ninjabrainbot.gui.frames.ThemedFrame;
+import ninjabrainbot.gui.style.theme.CurrentTheme;
+import ninjabrainbot.gui.style.theme.Theme;
 import ninjabrainbot.util.I18n;
 import ninjabrainbot.util.Profiler;
 
 public class StyleManager {
 
-	public CurrentTheme currentTheme;
+	private boolean initialized = false;
+
+	public final CurrentTheme currentTheme;
 	public SizePreference size;
 	private final ArrayList<ThemedComponent> themedComponents;
 	private final ArrayList<ThemedFrame> themedFrames;
@@ -38,7 +45,7 @@ public class StyleManager {
 		themedDialogs = new ArrayList<>();
 
 		initFonts();
-		currentTheme.whenModified().subscribe(__ -> updateFontsAndColors());
+		currentTheme.whenModified().subscribeEDT(__ -> updateFontsAndColors());
 	}
 
 	private void initFonts() {
@@ -60,6 +67,8 @@ public class StyleManager {
 
 	public void registerThemedComponent(ThemedComponent c) {
 		themedComponents.add(c);
+		if (initialized)
+			SwingUtilities.invokeLater(() -> initComponent(c));
 	}
 
 	public void registerThemedFrame(ThemedFrame f) {
@@ -84,7 +93,6 @@ public class StyleManager {
 		for (ThemedDialog tf : themedDialogs) {
 			tf.updateBounds(this);
 		}
-		// updateFontsAndColors();
 	}
 
 	private void updateFontsAndColors() {
@@ -105,23 +113,24 @@ public class StyleManager {
 	}
 
 	public void setSizePreference(SizePreference size) {
+		if (!SwingUtilities.isEventDispatchThread())
+			SwingUtilities.invokeLater(() -> setSizePreference(size));
 		this.size = size;
 		updateFontsAndColors();
 		updateBounds();
-//		SwingUtilities.invokeLater(() -> updateOBSOverlay());
 	}
 
 	private Font loadFont() {
 		Font font = null;
 		try {
-			font = Font.createFont(Font.TRUETYPE_FONT, Main.class.getResourceAsStream("/OpenSans-Regular.ttf"));
+			font = Font.createFont(Font.TRUETYPE_FONT, Objects.requireNonNull(Main.class.getResourceAsStream("/OpenSans-Regular.ttf")));
 		} catch (FontFormatException | IOException e) {
 			e.printStackTrace();
 		}
 		if (font == null || font.canDisplayUpTo(I18n.get("lang")) != -1) {
 			font = new Font(null);
 		}
-		if (font == null || font.canDisplayUpTo(I18n.get("lang")) != -1) {
+		if (font.canDisplayUpTo(I18n.get("lang")) != -1) {
 			Font[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
 			for (Font f : fonts) {
 				if (f.canDisplayUpTo(I18n.get("lang")) < 0) {
@@ -138,6 +147,12 @@ public class StyleManager {
 		Profiler.stopAndStart("Bounds");
 		updateBounds();
 		Profiler.stop();
+		initialized = true;
+	}
+
+	private void initComponent(ThemedComponent component) {
+		component.updateColors();
+		component.updateSize(this);
 	}
 
 }

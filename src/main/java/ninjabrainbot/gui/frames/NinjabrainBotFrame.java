@@ -5,6 +5,7 @@ import java.awt.GraphicsDevice.WindowTranslucency;
 import java.awt.GraphicsEnvironment;
 import java.awt.geom.RoundRectangle2D;
 import java.net.URL;
+import java.util.Objects;
 
 import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
@@ -13,42 +14,47 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 
 import ninjabrainbot.Main;
-import ninjabrainbot.data.IDataState;
-import ninjabrainbot.data.IDataStateHandler;
 import ninjabrainbot.event.IDisposable;
 import ninjabrainbot.gui.buttons.FlatButton;
 import ninjabrainbot.gui.buttons.NotificationsButton;
 import ninjabrainbot.gui.buttons.TitleBarButton;
-import ninjabrainbot.gui.components.ThemedIcon;
-import ninjabrainbot.gui.components.ThemedLabel;
-import ninjabrainbot.gui.panels.main.EnderEyePanel;
-import ninjabrainbot.gui.panels.main.MainButtonPanel;
-import ninjabrainbot.gui.panels.main.MainTextArea;
+import ninjabrainbot.gui.components.RefreshWindowOnMonitorChangeListener;
+import ninjabrainbot.gui.components.labels.ThemedIcon;
+import ninjabrainbot.gui.components.labels.ThemedLabel;
+import ninjabrainbot.gui.mainwindow.BoatIcon;
+import ninjabrainbot.gui.mainwindow.eyethrows.EnderEyePanel;
+import ninjabrainbot.gui.mainwindow.information.InformationListPanel;
+import ninjabrainbot.gui.mainwindow.main.MainButtonPanel;
+import ninjabrainbot.gui.mainwindow.main.MainTextArea;
 import ninjabrainbot.gui.style.SizePreference;
 import ninjabrainbot.gui.style.StyleManager;
-import ninjabrainbot.io.preferences.MultipleChoicePreferenceDataTypes.MainViewType;
 import ninjabrainbot.io.preferences.NinjabrainBotPreferences;
+import ninjabrainbot.io.preferences.enums.MainViewType;
+import ninjabrainbot.io.updatechecker.IUpdateChecker;
+import ninjabrainbot.model.datastate.IDataState;
+import ninjabrainbot.model.information.InformationMessageList;
+import ninjabrainbot.model.input.IButtonInputHandler;
 import ninjabrainbot.util.I18n;
 import ninjabrainbot.util.Profiler;
 
 public class NinjabrainBotFrame extends ThemedFrame implements IDisposable {
 
-	private static final long serialVersionUID = -8033268694989543737L;
+	private final NinjabrainBotPreferences preferences;
 
-	private NinjabrainBotPreferences preferences;
-
-	private ThemedLabel versiontextLabel;
-	private NotificationsButton notificationsButton;
+	private ThemedLabel versionTextLabel;
 	private JButton settingsButton;
 	private JLabel lockIcon;
 
 	private MainTextArea mainTextArea;
+	private InformationListPanel informationTextPanel;
 	private EnderEyePanel enderEyePanel;
 
 	private static final String TITLE_TEXT = I18n.get("title");
 	private static final String VERSION_TEXT = "v" + Main.VERSION;
 
-	public NinjabrainBotFrame(StyleManager styleManager, NinjabrainBotPreferences preferences, IDataStateHandler dataStateHandler) {
+	private final StyleManager styleManager;
+
+	public NinjabrainBotFrame(StyleManager styleManager, NinjabrainBotPreferences preferences, IUpdateChecker updateChecker, IDataState dataState, IButtonInputHandler buttonInputHandler, InformationMessageList informationMessageList) {
 		super(styleManager, preferences, TITLE_TEXT);
 		this.preferences = preferences;
 		Profiler.start("NinjabrainBotFrame");
@@ -57,10 +63,12 @@ public class NinjabrainBotFrame extends ThemedFrame implements IDisposable {
 		setTranslucent(preferences.translucent.get());
 		setAppIcon();
 
-		createTitleBar(styleManager, dataStateHandler.getDataState());
-		createComponents(styleManager, dataStateHandler);
-		setupSubscriptions(styleManager, dataStateHandler.getDataState());
+		createTitleBar(styleManager, dataState, updateChecker);
+		createComponents(styleManager, dataState, buttonInputHandler, informationMessageList);
+		setupSubscriptions(styleManager, dataState);
 		Profiler.stop();
+
+		this.styleManager = styleManager;
 	}
 
 	@Override
@@ -68,7 +76,7 @@ public class NinjabrainBotFrame extends ThemedFrame implements IDisposable {
 		super.updateBounds(styleManager);
 		int titlewidth = styleManager.getTextWidth(TITLE_TEXT, styleManager.fontSize(styleManager.size.TEXT_SIZE_TITLE_LARGE, false));
 		int titlebarHeight = titlebarPanel.getPreferredSize().height;
-		versiontextLabel.setBounds(titlewidth + (titlebarHeight - styleManager.size.TEXT_SIZE_TITLE_SMALL) / 2, (styleManager.size.TEXT_SIZE_TITLE_LARGE - styleManager.size.TEXT_SIZE_TITLE_SMALL) / 2, 70, titlebarHeight);
+		versionTextLabel.setBounds(titlewidth + (titlebarHeight - styleManager.size.TEXT_SIZE_TITLE_SMALL) / 2, (styleManager.size.TEXT_SIZE_TITLE_LARGE - styleManager.size.TEXT_SIZE_TITLE_SMALL) / 2, 70, titlebarHeight);
 		int versionwidth = styleManager.getTextWidth(VERSION_TEXT, styleManager.fontSize(styleManager.size.TEXT_SIZE_TITLE_SMALL, false));
 		lockIcon.setBounds(titlewidth + versionwidth + (titlebarHeight - styleManager.size.TEXT_SIZE_TITLE_SMALL) / 2, 0, titlebarHeight, titlebarHeight);
 		// Frame size
@@ -87,35 +95,35 @@ public class NinjabrainBotFrame extends ThemedFrame implements IDisposable {
 
 	private void setupSubscriptions(StyleManager styleManager, IDataState dataState) {
 		// Settings
-		sh.add(preferences.translucent.whenModified().subscribe(b -> setTranslucent(b)));
-		sh.add(preferences.alwaysOnTop.whenModified().subscribe(b -> setAlwaysOnTop(b)));
-		sh.add(preferences.hotkeyMinimize.whenTriggered().subscribe(__ -> toggleMinimized()));
+		disposeHandler.add(preferences.translucent.whenModified().subscribeEDT(this::setTranslucent));
+		disposeHandler.add(preferences.alwaysOnTop.whenModified().subscribeEDT(this::setAlwaysOnTop));
+		disposeHandler.add(preferences.hotkeyMinimize.whenTriggered().subscribeEDT(__ -> toggleMinimized()));
 		// Components bounds changed
-		sh.add(mainTextArea.whenModified().subscribe(__ -> updateSize(styleManager)));
-		sh.add(enderEyePanel.whenModified().subscribe(__ -> updateSize(styleManager)));
+		disposeHandler.add(mainTextArea.whenModified().subscribeEDT(__ -> updateSize(styleManager)));
+		disposeHandler.add(informationTextPanel.whenModified().subscribeEDT(__ -> updateSize(styleManager)));
+		disposeHandler.add(enderEyePanel.whenModified().subscribeEDT(__ -> updateSize(styleManager)));
 		// Lock
-		sh.add(dataState.locked().subscribeEDT(b -> lockIcon.setVisible(b)));
+		disposeHandler.add(dataState.locked().subscribeEDT(b -> lockIcon.setVisible(b)));
 	}
 
-	private void createTitleBar(StyleManager styleManager, IDataState dataState) {
-		versiontextLabel = new ThemedLabel(styleManager, VERSION_TEXT) {
-			private static final long serialVersionUID = 7210941876032010219L;
-
+	private void createTitleBar(StyleManager styleManager, IDataState dataState, IUpdateChecker updateChecker) {
+		versionTextLabel = new ThemedLabel(styleManager, VERSION_TEXT) {
 			@Override
 			public int getTextSize(SizePreference p) {
 				return p.TEXT_SIZE_TITLE_SMALL;
 			}
 		};
-		versiontextLabel.setForegroundColor(styleManager.currentTheme.TEXT_COLOR_WEAK);
-		lockIcon = new ThemedIcon(styleManager, new ImageIcon(Main.class.getResource("/lock_icon.png")));
+		versionTextLabel.setForegroundColor(styleManager.currentTheme.TEXT_COLOR_WEAK);
+		lockIcon = new ThemedIcon(styleManager, new ImageIcon(Objects.requireNonNull(Main.class.getResource("/lock_icon.png"))));
 		lockIcon.setVisible(dataState.locked().get());
-		titlebarPanel.add(versiontextLabel);
+		titlebarPanel.add(versionTextLabel);
 		titlebarPanel.add(lockIcon);
 		titlebarPanel.addButton(createMinimizeButton(styleManager));
 		settingsButton = createSettingsButton(styleManager);
 		titlebarPanel.addButton(settingsButton);
-		notificationsButton = new NotificationsButton(styleManager, this, preferences);
+		NotificationsButton notificationsButton = new NotificationsButton(styleManager, this, preferences, updateChecker);
 		titlebarPanel.addButton(notificationsButton);
+		titlebarPanel.addButton(new BoatIcon(styleManager, dataState.boatDataState().boatState(), preferences, disposeHandler));
 	}
 
 	@Override
@@ -123,17 +131,25 @@ public class NinjabrainBotFrame extends ThemedFrame implements IDisposable {
 		System.exit(0);
 	}
 
-	private void createComponents(StyleManager styleManager, IDataStateHandler dataStateHandler) {
-		IDataState dataState = dataStateHandler.getDataState();
+	private void createComponents(StyleManager styleManager, IDataState dataState, IButtonInputHandler buttonInputHandler, InformationMessageList informationMessageList) {
 		// Main text
-		mainTextArea = new MainTextArea(styleManager, preferences, dataState);
+		mainTextArea = new MainTextArea(styleManager, buttonInputHandler, preferences, dataState);
 		add(mainTextArea);
+		// Info and warnings
+		informationTextPanel = new InformationListPanel(styleManager, informationMessageList);
+		add(informationTextPanel);
 		// "Throws" text + buttons
-		MainButtonPanel mainButtonPanel = new MainButtonPanel(styleManager, dataState, dataStateHandler);
+		MainButtonPanel mainButtonPanel = new MainButtonPanel(styleManager, buttonInputHandler);
 		add(mainButtonPanel);
 		// Throw panels
-		enderEyePanel = new EnderEyePanel(styleManager, preferences, dataStateHandler, dataState.getDivineContext());
+		enderEyePanel = new EnderEyePanel(styleManager, preferences, dataState, buttonInputHandler);
 		add(enderEyePanel);
+	}
+
+	@Override
+	public void validate() {
+		super.validate();
+		updateSize(styleManager);
 	}
 
 	private FlatButton createMinimizeButton(StyleManager styleManager) {
@@ -147,8 +163,7 @@ public class NinjabrainBotFrame extends ThemedFrame implements IDisposable {
 	private FlatButton createSettingsButton(StyleManager styleManager) {
 		URL iconURL = Main.class.getResource("/settings_icon.png");
 		ImageIcon img = new ImageIcon(iconURL);
-		FlatButton button = new TitleBarButton(styleManager, img);
-		return button;
+		return new TitleBarButton(styleManager, img);
 	}
 
 	private void toggleMinimized() {
@@ -176,7 +191,7 @@ public class NinjabrainBotFrame extends ThemedFrame implements IDisposable {
 
 	private void setAppIcon() {
 		URL iconURL = Main.class.getResource("/icon.png");
-		ImageIcon img = new ImageIcon(iconURL);
+		ImageIcon img = new ImageIcon(Objects.requireNonNull(iconURL));
 		setIconImage(img.getImage());
 	}
 

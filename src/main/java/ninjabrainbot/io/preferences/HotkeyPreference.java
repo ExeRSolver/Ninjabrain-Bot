@@ -2,28 +2,26 @@ package ninjabrainbot.io.preferences;
 
 import java.util.ArrayList;
 
-import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
-
 import ninjabrainbot.event.ISubscribable;
 import ninjabrainbot.event.ObservableProperty;
 
 public class HotkeyPreference {
 
-	public static ArrayList<HotkeyPreference> hotkeys = new ArrayList<HotkeyPreference>();
+	public static final ArrayList<HotkeyPreference> hotkeys = new ArrayList<HotkeyPreference>();
 
-	IPreferenceSource pref;
+	final IPreferenceSource pref;
 
-	IntPreference modifier;
-	IntPreference code;
+	final IntPreference modifier;
+	final IntPreference code;
 
-	private ObservableProperty<NativeKeyEvent> whenTriggered;
+	private final ObservableProperty<HotkeyPreference> whenTriggered;
 
 	public HotkeyPreference(String key, IPreferenceSource pref) {
 		this.pref = pref;
 		modifier = new IntPreference(key + "_modifier", -1, pref);
 		code = new IntPreference(key + "_code", -1, pref);
 		hotkeys.add(this);
-		whenTriggered = new ObservableProperty<NativeKeyEvent>();
+		whenTriggered = new ObservableProperty<>();
 	}
 
 	public int getCode() {
@@ -42,11 +40,11 @@ public class HotkeyPreference {
 		modifier.set(value);
 	}
 
-	public final void execute(NativeKeyEvent e) {
-		whenTriggered.notifySubscribers(e);
+	public final void execute() {
+		whenTriggered.notifySubscribers(this);
 	}
 
-	public ISubscribable<NativeKeyEvent> whenTriggered() {
+	public ISubscribable<HotkeyPreference> whenTriggered() {
 		return whenTriggered;
 	}
 

@@ -6,7 +6,7 @@ import ninjabrainbot.Main;
 
 public class SavedPreferences implements IPreferenceSource {
 
-	Preferences pref;
+	final Preferences pref;
 
 	public SavedPreferences() {
 		pref = Preferences.userNodeForPackage(Main.class);
@@ -30,6 +30,16 @@ public class SavedPreferences implements IPreferenceSource {
 	@Override
 	public void putFloat(String key, float value) {
 		pref.putFloat(key, value);
+	}
+
+	@Override
+	public double getDouble(String key, double defaultValue) {
+		return pref.getDouble(key, defaultValue);
+	}
+
+	@Override
+	public void putDouble(String key, double value) {
+		pref.putDouble(key, value);
 	}
 
 	@Override

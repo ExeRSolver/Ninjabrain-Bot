@@ -2,41 +2,49 @@ package ninjabrainbot.io;
 
 import javax.swing.Timer;
 
-import ninjabrainbot.data.IDataState;
-import ninjabrainbot.data.IDataStateHandler;
+import ninjabrainbot.event.DisposeHandler;
 import ninjabrainbot.event.IDisposable;
-import ninjabrainbot.event.SubscriptionHandler;
+import ninjabrainbot.io.preferences.NinjabrainBotPreferences;
+import ninjabrainbot.model.actions.IActionExecutor;
+import ninjabrainbot.model.actions.common.ResetAction;
+import ninjabrainbot.model.datastate.IDataState;
+import ninjabrainbot.model.domainmodel.IDomainModel;
 
 public class AutoResetTimer extends Timer implements IDisposable {
 
-	private static final long serialVersionUID = 607205414762178442L;
-
 	private static final int AUTO_RESET_DELAY = 15 * 60 * 1000;
 
-	SubscriptionHandler sh = new SubscriptionHandler();
+	private final NinjabrainBotPreferences preferences;
 
-	public AutoResetTimer(IDataState dataState, IDataStateHandler dataStateHandler) {
+	final DisposeHandler disposeHandler = new DisposeHandler();
+
+	public AutoResetTimer(IDataState dataState, IDomainModel domainModel, IActionExecutor actionExecutor, NinjabrainBotPreferences preferences) {
 		super(AUTO_RESET_DELAY, null);
+		this.preferences = preferences;
 		addActionListener(p -> {
-			dataStateHandler.resetIfNotLocked();
+			if (!dataState.locked().get())
+				actionExecutor.executeImmediately(new ResetAction(domainModel));
 			restart();
 			stop();
 		});
-		sh.add(dataState.locked().subscribe(__ -> restart()));
-		sh.add(dataState.blindResult().subscribe(__ -> restart()));
-		sh.add(dataState.calculatorResult().subscribe(__ -> restart()));
+
+		refresh();
+		disposeHandler.add(domainModel.whenModified().subscribe(this::refresh));
+		disposeHandler.add(preferences.autoReset.whenModified().subscribe(this::refresh));
 	}
 
-	public void setAutoResetEnabled(boolean b) {
-		if (b)
+	private void refresh() {
+		restart();
+		if (preferences.autoReset.get()) {
 			start();
-		else
+		} else {
 			stop();
+		}
 	}
 
 	@Override
 	public void dispose() {
-		sh.dispose();
+		disposeHandler.dispose();
 	}
 
 }

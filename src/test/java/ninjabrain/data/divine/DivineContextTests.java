@@ -5,17 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.HashMap;
 import java.util.Random;
 
+import ninjabrainbot.model.datastate.divine.BuriedTreasure;
+import ninjabrainbot.model.datastate.divine.DivineContext;
+import ninjabrainbot.model.datastate.divine.DivineMonteCarloSimulator;
+import ninjabrainbot.model.datastate.statistics.RayApproximatedPrior;
+import ninjabrainbot.model.datastate.stronghold.Chunk;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import ninjabrainbot.data.datalock.AlwaysUnlocked;
-import ninjabrainbot.data.divine.BuriedTreasure;
-import ninjabrainbot.data.divine.DivineMonteCarloSimulator;
-import ninjabrainbot.data.divine.DivineContext;
-import ninjabrainbot.data.endereye.Throw;
-import ninjabrainbot.data.statistics.RayApproximatedPrior;
-import ninjabrainbot.data.stronghold.Chunk;
-import ninjabrainbot.io.preferences.MultipleChoicePreferenceDataTypes.McVersion;
 
 public class DivineContextTests {
 
@@ -64,7 +60,7 @@ public class DivineContextTests {
 
 	@Test
 	void test() {
-		DivineContext divineContext = new DivineContext(new AlwaysUnlocked());
+		DivineContext divineContext = new DivineContext(null);
 
 		RayApproximatedPrior prior = new RayApproximatedPrior(Throw.parseF3C("/execute in minecraft:overworld run tp @s 2005.35 64.00 2.57 7.85 -31.08", 0, new AlwaysUnlocked()), divineContext, McVersion.PRE_119);
 

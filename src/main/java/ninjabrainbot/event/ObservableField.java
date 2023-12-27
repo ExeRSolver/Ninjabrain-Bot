@@ -1,26 +1,38 @@
 package ninjabrainbot.event;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.function.Consumer;
 
-public class ObservableField<T> implements IObservable<T> {
+public class ObservableField<T> implements IObservable<T>, IUnsubscribable<T> {
+
+	private final boolean pushDataToNewSubscribers;
 
 	private T data;
 
-	private ArrayList<Consumer<T>> subscribers;
+	private final ArrayList<Consumer<T>> subscribers;
 
 	public ObservableField() {
 		this(null);
 	}
 
 	public ObservableField(T data) {
+		this(data, false);
+	}
+
+	public ObservableField(T data, boolean pushDataToNewSubscribers) {
 		subscribers = new ArrayList<Consumer<T>>();
 		this.data = data;
+		this.pushDataToNewSubscribers = pushDataToNewSubscribers;
 	}
 
 	@Override
 	public Subscription subscribe(Consumer<T> subscriber) {
 		subscribers.add(subscriber);
+		if (pushDataToNewSubscribers) {
+			if (data != null)
+				subscriber.accept(data);
+		}
 		return new Subscription(this, subscriber);
 	}
 
@@ -30,8 +42,18 @@ public class ObservableField<T> implements IObservable<T> {
 	}
 
 	public void set(T value) {
-		if (value == data || (value != null && value.equals(data)))
+		if (Objects.equals(value, data))
 			return;
+		data = value;
+		for (Consumer<T> subscriber : subscribers) {
+			subscriber.accept(data);
+		}
+	}
+
+	/**
+	 * Sets the value and notifies subscribers even if the value was the same as the previous value.
+	 */
+	public void setAndAlwaysNotifySubscribers(T value){
 		data = value;
 		for (Consumer<T> subscriber : subscribers) {
 			subscriber.accept(data);

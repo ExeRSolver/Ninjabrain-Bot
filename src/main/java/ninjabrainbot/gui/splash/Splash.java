@@ -11,9 +11,11 @@ import java.awt.event.ActionListener;
 
 import javax.swing.Timer;
 
+import ninjabrainbot.util.Logger;
+
 public class Splash {
 
-	SplashScreen splashScreen;
+	final SplashScreen splashScreen;
 	Graphics2D g;
 
 	private Timer timer;
@@ -65,7 +67,7 @@ public class Splash {
 	}
 
 	private void render(String text, float percentage) {
-		synchronized (SplashScreen.class) {
+		try {
 			if (checkIfStopped())
 				return;
 			Rectangle r = splashScreen.getBounds();
@@ -78,12 +80,14 @@ public class Splash {
 			g.fillRect(0, r.height - LOADING_BAR_HEIGHT, (int) (r.width * percentage), LOADING_BAR_HEIGHT);
 			if (splashScreen.isVisible())
 				splashScreen.update();
+		} catch (IllegalStateException e) {
+			Logger.log("Warning: Splash screen tried to render when application had finished loading.");
 		}
 	}
 
 	private void render(float percentage) {
-		checkIfStopped();
-		synchronized (SplashScreen.class) {
+		try {
+			checkIfStopped();
 			if (!splashScreen.isVisible())
 				return;
 			Rectangle r = splashScreen.getBounds();
@@ -92,6 +96,8 @@ public class Splash {
 			g.fillRect(0, r.height - LOADING_BAR_HEIGHT, (int) (r.width * percentage), LOADING_BAR_HEIGHT);
 			if (splashScreen.isVisible())
 				splashScreen.update();
+		} catch (IllegalStateException e) {
+			Logger.log("Warning: Splash screen tried to render when application had finished loading.");
 		}
 	}
 

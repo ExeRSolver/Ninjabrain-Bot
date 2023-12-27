@@ -12,23 +12,21 @@ import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 import ninjabrainbot.gui.buttons.FlatButton;
-import ninjabrainbot.gui.components.ThemedLabel;
+import ninjabrainbot.gui.components.labels.ThemedLabel;
 import ninjabrainbot.gui.style.SizePreference;
 import ninjabrainbot.gui.style.StyleManager;
-import ninjabrainbot.io.VersionURL;
+import ninjabrainbot.io.updatechecker.VersionURL;
 import ninjabrainbot.io.preferences.NinjabrainBotPreferences;
 import ninjabrainbot.util.I18n;
 
 public class NotificationsFrame extends ThemedFrame {
 
-	private static final long serialVersionUID = 1767257205939839293L;
-
 	static final int PADDING = 6;
 
 	VersionURL url;
 
-	JPanel mainPanel;
-	ThemedLabel label;
+	final JPanel mainPanel;
+	final ThemedLabel label;
 
 	public NotificationsFrame(StyleManager styleManager, NinjabrainBotPreferences preferences) {
 		super(styleManager, preferences, I18n.get("notificationsframe.new_version_available"));
@@ -38,8 +36,6 @@ public class NotificationsFrame extends ThemedFrame {
 		mainPanel.setBorder(new EmptyBorder(PADDING - 3, PADDING, PADDING, PADDING));
 		add(mainPanel);
 		label = new ThemedLabel(styleManager, "") {
-			private static final long serialVersionUID = 4168366004174721821L;
-
 			@Override
 			public int getTextSize(SizePreference p) {
 				return p.TEXT_SIZE_SMALL;
@@ -57,7 +53,7 @@ public class NotificationsFrame extends ThemedFrame {
 		mainPanel.add(changelogButton);
 
 		// Subscriptions
-		sh.add(preferences.alwaysOnTop.whenModified().subscribe(b -> setAlwaysOnTop(b)));
+		disposeHandler.add(preferences.alwaysOnTop.whenModified().subscribeEDT(b -> setAlwaysOnTop(b)));
 	}
 
 	@Override
