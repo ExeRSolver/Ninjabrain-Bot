@@ -1,23 +1,23 @@
 package ninjabrainbot.util;
 
+import ninjabrainbot.model.datastate.common.BlockPosition;
 import ninjabrainbot.model.datastate.common.IDetailedPlayerPosition;
 import ninjabrainbot.model.datastate.common.IPlayerPosition;
 import ninjabrainbot.model.datastate.common.IPlayerPositionInputSource;
-import ninjabrainbot.model.datastate.divine.Fossil;
-import ninjabrainbot.model.input.IFossilInputSource;
+import ninjabrainbot.model.input.IBlockPositionInputSource;
 import ninjabrainbot.event.ISubscribable;
 import ninjabrainbot.event.ObservableProperty;
 
-public class FakeCoordinateInputSource implements IPlayerPositionInputSource, IFossilInputSource {
+public class FakeCoordinateInputSource implements IPlayerPositionInputSource, IBlockPositionInputSource {
 
 	public final ObservableProperty<IDetailedPlayerPosition> whenNewDetailedPlayerPositionInputted;
 	public final ObservableProperty<IPlayerPosition> whenNewLimitedPlayerPositionInputted;
-	public final ObservableProperty<Fossil> whenNewFossilInputted;
+	public final ObservableProperty<BlockPosition> whenNewBlockPositionInputted;
 
 	public FakeCoordinateInputSource() {
 		whenNewDetailedPlayerPositionInputted = new ObservableProperty<>();
 		whenNewLimitedPlayerPositionInputted = new ObservableProperty<>();
-		whenNewFossilInputted = new ObservableProperty<>();
+		whenNewBlockPositionInputted = new ObservableProperty<>();
 	}
 
 	public ISubscribable<IDetailedPlayerPosition> whenNewDetailedPlayerPositionInputted() {
@@ -28,7 +28,7 @@ public class FakeCoordinateInputSource implements IPlayerPositionInputSource, IF
 		return whenNewLimitedPlayerPositionInputted;
 	}
 
-	public ISubscribable<Fossil> whenNewFossilInputted() {
-		return whenNewFossilInputted;
+	public ISubscribable<BlockPosition> whenNewBlockPositionInputted() {
+		return whenNewBlockPositionInputted;
 	}
 }

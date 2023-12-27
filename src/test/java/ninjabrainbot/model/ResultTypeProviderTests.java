@@ -7,15 +7,14 @@ import ninjabrainbot.model.actions.ActionExecutor;
 import ninjabrainbot.model.datastate.DataState;
 import ninjabrainbot.model.datastate.IDataState;
 import ninjabrainbot.model.datastate.blind.BlindResult;
+import ninjabrainbot.model.datastate.common.BlockPosition;
 import ninjabrainbot.model.datastate.common.IDetailedPlayerPosition;
 import ninjabrainbot.model.datastate.common.ResultType;
-import ninjabrainbot.model.datastate.divine.Fossil;
 import ninjabrainbot.model.datastate.endereye.EnderEyeThrowFactory;
 import ninjabrainbot.model.datastate.endereye.IEnderEyeThrowFactory;
 import ninjabrainbot.model.domainmodel.DomainModel;
-import ninjabrainbot.model.environmentstate.CalculatorSettings;
 import ninjabrainbot.model.environmentstate.EnvironmentState;
-import ninjabrainbot.model.input.FossilInputHandler;
+import ninjabrainbot.model.input.BlockPositionInputHandler;
 import ninjabrainbot.model.input.PlayerPositionInputHandler;
 import ninjabrainbot.util.FakeCoordinateInputSource;
 import ninjabrainbot.util.TestUtils;
@@ -47,14 +46,14 @@ public class ResultTypeProviderTests {
 		FakeCoordinateInputSource coordinateInputSource = new FakeCoordinateInputSource();
 		IEnderEyeThrowFactory enderEyeThrowFactory = new EnderEyeThrowFactory(preferences, dataState.boatDataState());
 		new PlayerPositionInputHandler(coordinateInputSource, dataState, actionExecutor, preferences, enderEyeThrowFactory);
-		new FossilInputHandler(coordinateInputSource, dataState, actionExecutor);
+		new BlockPositionInputHandler(coordinateInputSource, dataState, actionExecutor);
 
 		ObservableProperty<IDetailedPlayerPosition> playerPositionStream = coordinateInputSource.whenNewDetailedPlayerPositionInputted;
-		ObservableProperty<Fossil> fossilStream = coordinateInputSource.whenNewFossilInputted;
+		ObservableProperty<BlockPosition> blockPositionStream = coordinateInputSource.whenNewBlockPositionInputted;
 
 		assertEquals(dataState.resultType().get(), ResultType.NONE);
 
-		fossilStream.notifySubscribers(new Fossil(1));
+		blockPositionStream.notifySubscribers(new BlockPosition(1, 73, 7));
 		assertEquals(dataState.resultType().get(), ResultType.DIVINE);
 		assertEquals(dataState.divineResult().get().fossil.x, 1);
 

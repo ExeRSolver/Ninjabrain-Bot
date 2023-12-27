@@ -18,21 +18,16 @@ import ninjabrainbot.io.preferences.enums.MainViewType;
 import ninjabrainbot.io.preferences.enums.StrongholdDisplayType;
 import ninjabrainbot.model.ModelState;
 import ninjabrainbot.model.actions.IActionExecutor;
-import ninjabrainbot.model.actions.common.ResetAction;
 import ninjabrainbot.model.datastate.IDataState;
+import ninjabrainbot.model.datastate.common.BlockPosition;
 import ninjabrainbot.model.datastate.common.IDetailedPlayerPosition;
-import ninjabrainbot.model.datastate.divine.Fossil;
 import ninjabrainbot.model.datastate.endereye.CoordinateInputSource;
 import ninjabrainbot.model.datastate.endereye.EnderEyeThrowFactory;
 import ninjabrainbot.model.datastate.endereye.IEnderEyeThrowFactory;
 import ninjabrainbot.model.domainmodel.IDomainModel;
 import ninjabrainbot.model.environmentstate.IEnvironmentState;
 import ninjabrainbot.model.information.InformationMessageList;
-import ninjabrainbot.model.input.ActiveInstanceInputHandler;
-import ninjabrainbot.model.input.ButtonInputHandler;
-import ninjabrainbot.model.input.FossilInputHandler;
-import ninjabrainbot.model.input.HotkeyInputHandler;
-import ninjabrainbot.model.input.PlayerPositionInputHandler;
+import ninjabrainbot.model.input.*;
 import ninjabrainbot.util.Assert;
 import ninjabrainbot.util.FakeCoordinateInputSource;
 import ninjabrainbot.util.FakeMinecraftWorldFile;
@@ -58,8 +53,8 @@ public class IntegrationTestBuilder {
 
 	private PlayerPositionInputHandler playerPositionInputHandler;
 	private PlayerPositionInputHandler fakePlayerPositionInputHandler;
-	private FossilInputHandler fossilInputHandler;
-	private FossilInputHandler fakeFossilInputHandler;
+	private BlockPositionInputHandler blockPositionInputHandler;
+	private BlockPositionInputHandler fakeBlockPositionInputHandler;
 	private HotkeyInputHandler hotkeyInputHandler;
 	private ButtonInputHandler buttonInputHandler;
 	private ActiveInstanceInputHandler activeInstanceInputHandler;
@@ -112,7 +107,7 @@ public class IntegrationTestBuilder {
 		if (clipboardReader == null) clipboardReader = new MockedClipboardReader();
 		if (coordinateInputSource == null) coordinateInputSource = new CoordinateInputSource(clipboardReader);
 		if (playerPositionInputHandler == null) playerPositionInputHandler = createPlayerPositionInputHandler();
-		if (fossilInputHandler == null) fossilInputHandler = new FossilInputHandler(coordinateInputSource, dataState, actionExecutor);
+		if (blockPositionInputHandler == null) blockPositionInputHandler = new BlockPositionInputHandler(coordinateInputSource, dataState, actionExecutor);
 		clipboardReader.setClipboard(clipboardString);
 	}
 
@@ -185,12 +180,12 @@ public class IntegrationTestBuilder {
 		fakeCoordinateInputSource.whenNewDetailedPlayerPositionInputted.notifySubscribers(detailedPlayerPosition);
 	}
 
-	public void inputFossil(Fossil fossil) {
+	public void inputBlockPosition(BlockPosition blockPosition) {
 		if (fakeCoordinateInputSource == null)
 			fakeCoordinateInputSource = new FakeCoordinateInputSource();
-		if (fakeFossilInputHandler == null)
-			fakeFossilInputHandler = new FossilInputHandler(fakeCoordinateInputSource, dataState, actionExecutor);
-		fakeCoordinateInputSource.whenNewFossilInputted.notifySubscribers(fossil);
+		if (fakeBlockPositionInputHandler == null)
+			fakeBlockPositionInputHandler = new BlockPositionInputHandler(fakeCoordinateInputSource, dataState, actionExecutor);
+		fakeCoordinateInputSource.whenNewBlockPositionInputted.notifySubscribers(blockPosition);
 	}
 
 	public void resetCalculator() {
