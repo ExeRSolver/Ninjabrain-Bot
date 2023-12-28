@@ -21,12 +21,15 @@ public class DivineContext implements IDivineContext, IDisposable {
 	private final DataComponent<FirstPortal> firstPortal;
 	private final ListComponent<BuriedTreasure> buriedTreasures;
 
+	private final DataComponent<Boolean> measuringPortalOrientation;
+
 	private final DisposeHandler disposeHandler = new DisposeHandler();
 
 	public DivineContext(IDomainModel domainModel) {
 		fossil = new DataComponent<>(domainModel);
         buriedTreasures = new ListComponent<>(domainModel, 2);
         firstPortal = new DataComponent<>(domainModel);
+		measuringPortalOrientation = new DataComponent<>(domainModel, false);
         discretizedAngularDensity = new DiscretizedDensity(0, 2.0 * Math.PI);
 		simulator = new DivineMonteCarloSimulator();
 		disposeHandler.add(fossil.subscribeInternal(this::onChanged));
@@ -57,6 +60,11 @@ public class DivineContext implements IDivineContext, IDisposable {
 	@Override
 	public IDataComponent<FirstPortal> firstPortal() {
 		return firstPortal;
+	}
+
+	@Override
+	public IDataComponent<Boolean> measuringPortalOrientation() {
+		return measuringPortalOrientation;
 	}
 
 	@Override

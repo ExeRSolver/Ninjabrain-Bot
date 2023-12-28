@@ -1,4 +1,4 @@
-package ninjabrainbot.model.actions.common;
+package ninjabrainbot.model.actions.divine;
 
 import ninjabrainbot.model.actions.IAction;
 import ninjabrainbot.model.datastate.divine.Fossil;

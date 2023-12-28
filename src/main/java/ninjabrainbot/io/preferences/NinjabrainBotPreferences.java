@@ -23,6 +23,7 @@ public class NinjabrainBotPreferences {
 	public final HotkeyPreference hotkeyAltStd;
 	public final HotkeyPreference hotkeyLock;
 	public final HotkeyPreference hotkeyToggleAllAdvancementsMode;
+	public final HotkeyPreference hotkeyPortalOrientation;
 	public final FloatPreference sigma;
 	public final FloatPreference sigmaAlt;
 	public final FloatPreference sigmaManual;
@@ -79,6 +80,7 @@ public class NinjabrainBotPreferences {
 		hotkeyLock = new HotkeyPreference("hotkey_lock", source);
 		hotkeyBoat = new HotkeyPreference("hotkey_boat", source);
 		hotkeyToggleAllAdvancementsMode = new HotkeyPreference("hotkey_toggle_aa_mode", source);
+        hotkeyPortalOrientation = new HotkeyPreference("hotkey_portal_orientation", source);
 		// Float
 		sigma = new FloatPreference("sigma", 0.1f, 0.001f, 1f, source);
 		sigmaAlt = new FloatPreference("sigma_alt", 0.1f, 0.001f, 1f, source);

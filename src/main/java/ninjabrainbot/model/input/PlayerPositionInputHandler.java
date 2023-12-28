@@ -1,6 +1,6 @@
 package ninjabrainbot.model.input;
 
-import ninjabrainbot.model.actions.common.SetFirstPortalAction;
+import ninjabrainbot.model.actions.divine.SetFirstPortalAction;
 import ninjabrainbot.model.datastate.IDataState;
 import ninjabrainbot.model.actions.endereye.AddEnderEyeThrowAction;
 import ninjabrainbot.model.actions.IAction;
@@ -51,7 +51,7 @@ public class PlayerPositionInputHandler implements IDisposable {
 		if (dataState.locked().get())
 			return null;
 
-		if (playerPosition.verticalAngle() > 0 && playerPosition.verticalAngle() < 10)
+		if (dataState.getDivineContext().measuringPortalOrientation().get())
 			return new SetFirstPortalAction(dataState.getDivineContext(), playerPosition.horizontalAngle());
 
 		if (!playerPosition.isInOverworld())

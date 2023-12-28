@@ -1,4 +1,4 @@
-package ninjabrainbot.model.actions.common;
+package ninjabrainbot.model.actions.divine;
 
 import ninjabrainbot.model.actions.IAction;
 import ninjabrainbot.model.datastate.divine.FirstPortal;
@@ -31,6 +31,7 @@ public class SetFirstPortalAction implements IAction {
 
 	@Override
 	public void execute() {
+		divineContext.measuringPortalOrientation().set(false);
 		divineContext.firstPortal().set(firstPortal);
 	}
 

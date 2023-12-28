@@ -14,6 +14,8 @@ public interface IDivineContext {
 
 	IDataComponent<FirstPortal> firstPortal();
 
+	IDataComponent<Boolean> measuringPortalOrientation();
+
 	boolean hasDivine();
 
 	double relativeDensity();

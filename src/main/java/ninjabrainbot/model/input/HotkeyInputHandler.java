@@ -7,6 +7,7 @@ import ninjabrainbot.model.actions.IActionExecutor;
 import ninjabrainbot.model.actions.boat.ToggleEnteringBoatAction;
 import ninjabrainbot.model.actions.common.ResetAction;
 import ninjabrainbot.model.actions.common.ToggleLockedAction;
+import ninjabrainbot.model.actions.divine.ToggleMeasuringPortalOrientationAction;
 import ninjabrainbot.model.actions.endereye.ChangeLastAngleAction;
 import ninjabrainbot.model.actions.endereye.ToggleAltStdOnLastThrowAction;
 import ninjabrainbot.model.datastate.IDataState;
@@ -35,6 +36,7 @@ public class HotkeyInputHandler implements IDisposable {
 		disposeHandler.add(preferences.hotkeyAltStd.whenTriggered().subscribe(this::toggleAltStdIfNotLocked));
 		disposeHandler.add(preferences.hotkeyBoat.whenTriggered().subscribe(this::toggleEnteringBoatIfNotLocked));
 		disposeHandler.add(preferences.hotkeyLock.whenTriggered().subscribe(__ -> actionExecutor.executeImmediately(new ToggleLockedAction(dataState))));
+		disposeHandler.add(preferences.hotkeyPortalOrientation.whenTriggered().subscribe(this::toggleMeasuringPortalOrientationIfNotLocked));
 		disposeHandler.add(preferences.usePreciseAngle.whenModified().subscribe(this::resetBoatState));
 	}
 
@@ -71,6 +73,11 @@ public class HotkeyInputHandler implements IDisposable {
 	private void resetBoatState(){
 		if (!preferences.usePreciseAngle.get() && dataState.boatDataState().enteringBoat().get())
 			actionExecutor.executeImmediately(new ToggleEnteringBoatAction(dataState));
+	}
+
+	private void toggleMeasuringPortalOrientationIfNotLocked() {
+		if (!dataState.locked().get() && !dataState.allAdvancementsDataState().allAdvancementsModeEnabled().get())
+			actionExecutor.executeImmediately(new ToggleMeasuringPortalOrientationAction(dataState));
 	}
 
 	@Override
