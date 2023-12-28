@@ -26,6 +26,11 @@ public interface IListComponent<T> extends IDataComponent<IReadOnlyList<T>>, IOb
 	void remove(T element);
 
 	/**
+	 * Returns a boolean based on whether the list contains the element.
+	 */
+	boolean contains(T t);
+
+	/**
 	 * Returns the maximum amount of elements the list can contain.
 	 */
 	int maxCapacity();

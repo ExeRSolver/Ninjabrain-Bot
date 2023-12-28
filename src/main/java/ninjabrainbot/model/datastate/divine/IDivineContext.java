@@ -2,6 +2,7 @@ package ninjabrainbot.model.datastate.divine;
 
 import ninjabrainbot.model.datastate.blind.BlindPosition;
 import ninjabrainbot.model.domainmodel.IDataComponent;
+import ninjabrainbot.model.domainmodel.IListComponent;
 
 public interface IDivineContext {
 
@@ -9,7 +10,7 @@ public interface IDivineContext {
 
 	IDataComponent<Fossil> fossil();
 
-	IDataComponent<BuriedTreasure> buriedTreasure();
+	IListComponent<BuriedTreasure> buriedTreasures();
 
 	IDataComponent<FirstPortal> firstPortal();
 

@@ -8,7 +8,9 @@ import ninjabrainbot.model.datastate.stronghold.Ring;
 import ninjabrainbot.model.domainmodel.DataComponent;
 import ninjabrainbot.model.domainmodel.IDataComponent;
 import ninjabrainbot.model.domainmodel.IDomainModel;
+import ninjabrainbot.model.domainmodel.ListComponent;
 import ninjabrainbot.util.Coords;
+import ninjabrainbot.util.Logger;
 
 public class DivineContext implements IDivineContext, IDisposable {
 
@@ -17,18 +19,18 @@ public class DivineContext implements IDivineContext, IDisposable {
 
 	public final DataComponent<Fossil> fossil;
 	private final DataComponent<FirstPortal> firstPortal;
-	private final DataComponent<BuriedTreasure> buriedTreasure;
+	private final ListComponent<BuriedTreasure> buriedTreasures;
 
 	private final DisposeHandler disposeHandler = new DisposeHandler();
 
 	public DivineContext(IDomainModel domainModel) {
 		fossil = new DataComponent<>(domainModel);
-        buriedTreasure = new DataComponent<>(domainModel);
+        buriedTreasures = new ListComponent<>(domainModel, 3);
         firstPortal = new DataComponent<>(domainModel);
         discretizedAngularDensity = new DiscretizedDensity(0, 2.0 * Math.PI);
 		simulator = new DivineMonteCarloSimulator();
 		disposeHandler.add(fossil.subscribeInternal(this::onChanged));
-		disposeHandler.add(buriedTreasure.subscribeInternal(this::onChanged));
+		disposeHandler.add(buriedTreasures.subscribeInternal(this::onChanged));
 		disposeHandler.add(firstPortal.subscribeInternal(this::onChanged));
 	}
 
@@ -48,8 +50,8 @@ public class DivineContext implements IDivineContext, IDisposable {
 	}
 
 	@Override
-	public IDataComponent<BuriedTreasure> buriedTreasure() {
-		return buriedTreasure;
+	public ListComponent<BuriedTreasure> buriedTreasures() {
+		return buriedTreasures;
 	}
 
 	@Override
@@ -59,7 +61,7 @@ public class DivineContext implements IDivineContext, IDisposable {
 
 	@Override
 	public boolean hasDivine() {
-		return fossil.get() != null || buriedTreasure.get() != null || firstPortal.get() != null;
+		return fossil.get() != null || buriedTreasures.get().size() > 0 || firstPortal.get() != null;
 	}
 
 	public double getDensityAtAngleBeforeSnapping(double phi) {
@@ -103,21 +105,23 @@ public class DivineContext implements IDivineContext, IDisposable {
 	private void onChanged() {
 		discretizedAngularDensity.reset(256 * 3);
 		if (hasDivine()) {
+			long t0 = System.currentTimeMillis();
+
 			simulator.reset();
+			buriedTreasures.get().forEach(simulator::addDivineObject);
 			if (fossil.get() != null) {
 				simulator.addDivineObject(fossil.get());
-			}
-			if (buriedTreasure.get() != null) {
-				simulator.addDivineObject(buriedTreasure.get());
 			}
 			if (firstPortal.get() != null) {
 				simulator.addDivineObject(firstPortal.get());
 			}
+
 			System.out.println("Updating " + simulator.divineObjects.size() + " divine objects");
 			for (int i = 0; i < 100000; i++) {
 				double phi = simulator.nextAngle();
 				addDensityThreeStrongholds(phi, 1);
 			}
+			Logger.log("Time to update divine angular density: " + (System.currentTimeMillis() - t0) / 1000f + " seconds.");
 		}
 		discretizedAngularDensity.normalize();
 	}

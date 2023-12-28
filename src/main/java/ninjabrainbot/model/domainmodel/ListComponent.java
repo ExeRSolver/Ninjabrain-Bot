@@ -75,6 +75,16 @@ public class ListComponent<T> implements IListComponent<T> {
 	}
 
 	@Override
+	public boolean contains(T t) {
+		for (int i = 0; i < this.size(); i++) {
+			if (t.equals(this.get(i))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
 	public boolean contentEquals(IReadOnlyList<T> value) {
 		if (value == null)
 			return false;

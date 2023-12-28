@@ -49,7 +49,7 @@ public class CalculatorManager implements ICalculatorManager, IDisposable {
 		disposeHandler.add(throwSet.subscribeInternal(this::onThrowSetModified));
 		disposeHandler.add(playerPosition.subscribeInternal(this::onPlayerPositionChanged));
 		disposeHandler.add(divineContext.fossil().subscribeInternal(this::onDivineChanged));
-		disposeHandler.add(divineContext.buriedTreasure().subscribeInternal(this::onDivineChanged));
+		disposeHandler.add(divineContext.buriedTreasures().subscribeInternal(this::onDivineChanged));
 		disposeHandler.add(divineContext.firstPortal().subscribeInternal(this::onDivineChanged));
 		topPredictionProvider = disposeHandler.add(new TopPredictionProvider(domainModel, calculatorResult));
 	}
