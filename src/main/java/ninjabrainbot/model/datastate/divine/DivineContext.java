@@ -25,7 +25,7 @@ public class DivineContext implements IDivineContext, IDisposable {
 
 	public DivineContext(IDomainModel domainModel) {
 		fossil = new DataComponent<>(domainModel);
-        buriedTreasures = new ListComponent<>(domainModel, 3);
+        buriedTreasures = new ListComponent<>(domainModel, 2);
         firstPortal = new DataComponent<>(domainModel);
         discretizedAngularDensity = new DiscretizedDensity(0, 2.0 * Math.PI);
 		simulator = new DivineMonteCarloSimulator();
@@ -117,7 +117,7 @@ public class DivineContext implements IDivineContext, IDisposable {
 			}
 
 			System.out.println("Updating " + simulator.divineObjects.size() + " divine objects");
-			for (int i = 0; i < 100000; i++) {
+			for (int i = 0; i < 100000 && simulator.shouldContinue(); i++) {
 				double phi = simulator.nextAngle();
 				addDensityThreeStrongholds(phi, 1);
 			}
