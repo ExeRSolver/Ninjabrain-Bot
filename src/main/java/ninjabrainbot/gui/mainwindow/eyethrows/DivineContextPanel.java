@@ -37,6 +37,9 @@ public class DivineContextPanel extends ThemedPanel implements IDisposable {
 
 	public DivineContextPanel(StyleManager styleManager, IDivineContext divineContext, IButtonInputHandler buttonInputHandler, int index, Runnable whenVisibilityChanged) {
 		super(styleManager);
+		this.index = index;
+		this.whenVisibilityChanged = whenVisibilityChanged;
+
 		setOpaque(true);
 		label = new JLabel((String) null, SwingConstants.CENTER);
 		removeButton = new FlatButton(styleManager, "-");
@@ -52,8 +55,6 @@ public class DivineContextPanel extends ThemedPanel implements IDisposable {
 		updateDivine(divineContext.getDivineObjects());
 		removeButton.addActionListener(__ -> buttonInputHandler.onRemoveDivineButtonPressed(this.divine));
 		divineSubscription = divineContext.getDivineObjects().subscribeEDT(this::updateDivine);
-		this.index = index;
-		this.whenVisibilityChanged = whenVisibilityChanged;
 
 		borderCol = styleManager.currentTheme.COLOR_DIVIDER_DARK;
 		setBackgroundColor(styleManager.currentTheme.COLOR_DIVIDER);

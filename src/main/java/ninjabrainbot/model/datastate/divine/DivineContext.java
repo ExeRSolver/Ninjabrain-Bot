@@ -40,6 +40,8 @@ public class DivineContext implements IDivineContext, IDisposable {
 
 	@Override
 	public void addDivineObject(IDivinable newDivine) {
+		if (newDivine == null)
+			return;
 		for (IDivinable oldDivine : divineObjects) {
 			if (newDivine.equals(oldDivine))
 				return;
