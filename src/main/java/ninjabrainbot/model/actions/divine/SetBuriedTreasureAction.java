@@ -16,8 +16,7 @@ public class SetBuriedTreasureAction implements IAction {
 
 	@Override
 	public void execute() {
-		if (!divineContext.buriedTreasures().contains(buriedTreasure))
-			divineContext.buriedTreasures().add(buriedTreasure);
+		divineContext.addDivineObject(buriedTreasure);
 	}
 
 }

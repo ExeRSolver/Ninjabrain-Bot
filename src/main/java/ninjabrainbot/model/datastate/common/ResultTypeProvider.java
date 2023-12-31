@@ -2,14 +2,13 @@ package ninjabrainbot.model.datastate.common;
 
 import ninjabrainbot.event.DisposeHandler;
 import ninjabrainbot.event.IDisposable;
-import ninjabrainbot.event.IObservable;
 import ninjabrainbot.model.datastate.IDataState;
 import ninjabrainbot.model.datastate.alladvancements.IAllAdvancementsDataState;
 import ninjabrainbot.model.datastate.calculator.ICalculatorResult;
-import ninjabrainbot.model.datastate.divine.Fossil;
-import ninjabrainbot.model.domainmodel.IDomainModel;
-import ninjabrainbot.model.domainmodel.IDomainModelComponent;
-import ninjabrainbot.model.domainmodel.InferredComponent;
+import ninjabrainbot.model.datastate.divine.DivineType;
+import ninjabrainbot.model.datastate.divine.IDivinable;
+import ninjabrainbot.model.datastate.divine.IDivineContext;
+import ninjabrainbot.model.domainmodel.*;
 
 public class ResultTypeProvider implements IDisposable {
 
@@ -18,7 +17,8 @@ public class ResultTypeProvider implements IDisposable {
 	private final IAllAdvancementsDataState allAdvancementsDataState;
 	private final IDomainModelComponent<ICalculatorResult> calculatorResult;
 	private final IDomainModelComponent<IPlayerPosition> playerPosition;
-	private final IDomainModelComponent<Fossil> fossil;
+	private final IDivineContext divineContext;
+	private final IListComponent<IDivinable> divineObjects;
 
 	private final DisposeHandler disposeHandler = new DisposeHandler();
 
@@ -27,12 +27,13 @@ public class ResultTypeProvider implements IDisposable {
 		allAdvancementsDataState = dataState.allAdvancementsDataState();
 		calculatorResult = dataState.calculatorResult();
 		playerPosition = dataState.playerPosition();
-		fossil = dataState.getDivineContext().fossil();
+		divineContext = dataState.getDivineContext();
+		divineObjects = divineContext.getDivineObjects();
 
 		disposeHandler.add(allAdvancementsDataState.allAdvancementsModeEnabled().subscribeInternal(this::updateResultType));
 		disposeHandler.add(calculatorResult.subscribeInternal(this::updateResultType));
 		disposeHandler.add(playerPosition.subscribeInternal(this::updateResultType));
-		disposeHandler.add(fossil.subscribeInternal(this::updateResultType));
+		disposeHandler.add(divineObjects.subscribeInternal(this::updateResultType));
 	}
 
 	public IDomainModelComponent<ResultType> resultType() {
@@ -52,7 +53,7 @@ public class ResultTypeProvider implements IDisposable {
 		if (playerPosition.get() != null && playerPosition.get().isInNether())
 			return ResultType.BLIND;
 
-		if (fossil.get() != null)
+		if (divineContext.getFirstDivineObjectOfType(DivineType.FOSSIL) != null)
 			return ResultType.DIVINE;
 
 		return ResultType.NONE;

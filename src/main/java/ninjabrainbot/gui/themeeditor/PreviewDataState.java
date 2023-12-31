@@ -45,7 +45,7 @@ public class PreviewDataState implements IDataState {
 		for (IEnderEyeThrow t : eyeThrows) {
 			throwSet.add(t);
 		}
-		divineContext.fossil.set(f);
+		divineContext.addDivineObject(f);
 	}
 
 	public PreviewDataState() {

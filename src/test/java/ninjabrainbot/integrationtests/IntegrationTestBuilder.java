@@ -21,6 +21,7 @@ import ninjabrainbot.model.actions.IActionExecutor;
 import ninjabrainbot.model.datastate.IDataState;
 import ninjabrainbot.model.datastate.common.BlockPosition;
 import ninjabrainbot.model.datastate.common.IDetailedPlayerPosition;
+import ninjabrainbot.model.datastate.divine.DivineType;
 import ninjabrainbot.model.datastate.endereye.CoordinateInputSource;
 import ninjabrainbot.model.datastate.endereye.EnderEyeThrowFactory;
 import ninjabrainbot.model.datastate.endereye.IEnderEyeThrowFactory;
@@ -126,7 +127,7 @@ public class IntegrationTestBuilder {
 
 	public void clickRemoveFossilButton() {
 		if (buttonInputHandler == null) buttonInputHandler = new ButtonInputHandler(domainModel, dataState, actionExecutor);
-		buttonInputHandler.onRemoveFossilButtonPressed();
+		buttonInputHandler.onRemoveDivineButtonPressed(dataState.getDivineContext().getFirstDivineObjectOfType(DivineType.FOSSIL));
 	}
 
 	public void triggerHotkey(HotkeyPreference hotkeyPreference) {

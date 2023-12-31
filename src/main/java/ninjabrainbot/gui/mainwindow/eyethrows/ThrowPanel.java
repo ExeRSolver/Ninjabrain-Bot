@@ -36,8 +36,6 @@ public class ThrowPanel extends ThemedPanel implements IDisposable {
 	protected final DisposeHandler disposeHandler = new DisposeHandler();
 	private final NinjabrainBotPreferences preferences;
 
-	DivineContextPanel divineContextPanel;
-
 	private ChunkPrediction lastTopPrediction;
 
 	private final int index;
@@ -253,8 +251,7 @@ public class ThrowPanel extends ThemedPanel implements IDisposable {
 	}
 
 	void updateVisibility() {
-		int k = (divineContextPanel != null && divineContextPanel.isVisible()) ? 1 : 0;
-		boolean newVisibility = index < 3 - k || hasThrow();
+		boolean newVisibility = index < 3 || hasThrow();
 		if (newVisibility != isVisible()) {
 			setVisible(newVisibility);
 			if (whenVisibilityChanged != null)
@@ -299,11 +296,6 @@ public class ThrowPanel extends ThemedPanel implements IDisposable {
 		if (chunkPredictionModifiedSubscription != null)
 			chunkPredictionModifiedSubscription.dispose();
 		disposeHandler.dispose();
-	}
-
-	public void setDivineContextPanel(DivineContextPanel divineContextPanel) {
-		this.divineContextPanel = divineContextPanel;
-		updateVisibility();
 	}
 
 }

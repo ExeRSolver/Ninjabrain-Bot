@@ -32,7 +32,7 @@ public class SetFirstPortalAction implements IAction {
 	@Override
 	public void execute() {
 		divineContext.measuringPortalOrientation().set(false);
-		divineContext.firstPortal().set(firstPortal);
+		divineContext.addDivineObject(firstPortal);
 	}
 
 }

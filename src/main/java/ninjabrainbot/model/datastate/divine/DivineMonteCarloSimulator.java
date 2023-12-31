@@ -1,7 +1,7 @@
 package ninjabrainbot.model.datastate.divine;
 
-import java.util.ArrayList;
-import java.util.List;
+import ninjabrainbot.event.IReadOnlyList;
+
 import java.util.Random;
 
 public class DivineMonteCarloSimulator {
@@ -9,24 +9,18 @@ public class DivineMonteCarloSimulator {
 	private final Random seedRng;
 	private final Random strongholdAngleRng;
 
-	private int seedsRemaining = 100_000_000;
+	private final IReadOnlyList<IDivinable> divineObjects;
 
-	public final List<IDivinable> divineObjects = new ArrayList<>();
+	private int seedsRemaining;
 
-	public DivineMonteCarloSimulator() {
-		seedRng = new Random();
-		strongholdAngleRng = new Random();
-	}
-
-	public boolean addDivineObject(IDivinable divineObject) {
-		if (divineObjects.contains(divineObject))
-			return false;
-		divineObjects.add(divineObject);
-		return true;
+	public DivineMonteCarloSimulator(IReadOnlyList<IDivinable> divineObjects) {
+		this.seedRng = new Random();
+		this.strongholdAngleRng = new Random();
+		this.divineObjects = divineObjects;
+		this.seedsRemaining = 100_000_000;
 	}
 
 	public void reset() {
-		divineObjects.clear();
 		seedsRemaining = 100_000_000;
 	}
 
@@ -46,7 +40,11 @@ public class DivineMonteCarloSimulator {
 	}
 
 	private boolean seedSatisfiesAllDivineObjectConditions(long seed) {
-		return divineObjects.stream().allMatch(object -> object.seedSatisfiesDivineCondition(seed));
+		for (IDivinable divineObject : divineObjects) {
+			if (!divineObject.seedSatisfiesDivineCondition(seed))
+				return false;
+		}
+		return true;
 	}
 
 }

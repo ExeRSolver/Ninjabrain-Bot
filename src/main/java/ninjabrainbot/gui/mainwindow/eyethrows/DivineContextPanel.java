@@ -8,8 +8,8 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.border.MatteBorder;
 
-import ninjabrainbot.model.datastate.divine.Fossil;
-import ninjabrainbot.model.datastate.divine.IDivineContext;
+import ninjabrainbot.event.IReadOnlyList;
+import ninjabrainbot.model.datastate.divine.*;
 import ninjabrainbot.model.input.IButtonInputHandler;
 import ninjabrainbot.event.IDisposable;
 import ninjabrainbot.event.Subscription;
@@ -25,16 +25,17 @@ import ninjabrainbot.util.I18n;
  */
 public class DivineContextPanel extends ThemedPanel implements IDisposable {
 
-	private IDivineContext dc;
+	private final int index;
+	private IDivinable divine;
 	private final JLabel label;
 	private final FlatButton removeButton;
 
-	final Subscription fossilSubscription;
+	final Subscription divineSubscription;
 	final Runnable whenVisibilityChanged;
 
 	private final WrappedColor borderCol;
 
-	public DivineContextPanel(StyleManager styleManager, IDivineContext divineContext, IButtonInputHandler buttonInputHandler, Runnable whenVisibilityChanged) {
+	public DivineContextPanel(StyleManager styleManager, IDivineContext divineContext, IButtonInputHandler buttonInputHandler, int index, Runnable whenVisibilityChanged) {
 		super(styleManager);
 		setOpaque(true);
 		label = new JLabel((String) null, SwingConstants.CENTER);
@@ -46,9 +47,12 @@ public class DivineContextPanel extends ThemedPanel implements IDisposable {
 		add(removeButton);
 		add(label);
 		setLayout(null);
-		onFossilChanged(divineContext.getFossil());
-		removeButton.addActionListener(__ -> buttonInputHandler.onRemoveFossilButtonPressed());
-		fossilSubscription = divineContext.fossil().subscribeEDT(this::onFossilChanged);
+		updateVisibility();
+
+		updateDivine(divineContext.getDivineObjects());
+		removeButton.addActionListener(__ -> buttonInputHandler.onRemoveDivineButtonPressed(this.divine));
+		divineSubscription = divineContext.getDivineObjects().subscribeEDT(this::updateDivine);
+		this.index = index;
 		this.whenVisibilityChanged = whenVisibilityChanged;
 
 		borderCol = styleManager.currentTheme.COLOR_DIVIDER_DARK;
@@ -94,8 +98,13 @@ public class DivineContextPanel extends ThemedPanel implements IDisposable {
 		setPreferredSize(new Dimension(styleManager.size.WIDTH, styleManager.size.TEXT_SIZE_SMALL + styleManager.size.PADDING_THIN * 2));
 	}
 
-	public boolean hasDivineContext() {
-		return dc != null;
+	void updateVisibility() {
+		boolean newVisibility = (divine != null);
+		if (newVisibility != isVisible()) {
+			setVisible(newVisibility);
+			if (whenVisibilityChanged != null)
+				whenVisibilityChanged.run();
+		}
 	}
 
 	@Override
@@ -105,17 +114,36 @@ public class DivineContextPanel extends ThemedPanel implements IDisposable {
 
 	@Override
 	public void dispose() {
-		fossilSubscription.dispose();
+		divineSubscription.dispose();
 	}
 
-	private void onFossilChanged(Fossil fossil) {
-		label.setText(fossil == null ? null : (I18n.get("divine") + I18n.get("fossil_number", fossil.x)));
-		boolean newVisibility = fossil != null;
-		if (newVisibility != isVisible()) {
-			setVisible(newVisibility);
-			if (whenVisibilityChanged != null)
-				whenVisibilityChanged.run();
+	private void updateDivine(IReadOnlyList<IDivinable> divineObjects) {
+		setDivine(index < divineObjects.size() ? divineObjects.get(index) : null);
+	}
+
+	private void setDivine(IDivinable divine) {
+		if (this.divine == divine)
+			return;
+
+		this.divine = divine;
+		if (divine == null) {
+			label.setText(null);
+			removeButton.setVisible(false);
+		} else {
+			switch (divine.divineType()) {
+				case FOSSIL:
+					label.setText((I18n.get("divine") + I18n.get("fossil_number", ((Fossil) divine).x)));
+					break;
+				case BURIED_TREASURE:
+					label.setText((I18n.get("divine") + I18n.get("bt_coords", ((BuriedTreasure) divine).x, ((BuriedTreasure) divine).z)));
+					break;
+				case FIRST_PORTAL:
+					label.setText((I18n.get("divine") + I18n.get("first_portal", ((FirstPortal) divine).orientation())));
+					break;
+			}
+			removeButton.setVisible(true);
 		}
+		updateVisibility();
 	}
 
 }

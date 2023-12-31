@@ -1,7 +1,7 @@
 package ninjabrainbot.gui.themeeditor;
 
-import ninjabrainbot.model.datastate.alladvancements.StructureType;
 import ninjabrainbot.model.datastate.common.StructurePosition;
+import ninjabrainbot.model.datastate.divine.IDivinable;
 import ninjabrainbot.model.datastate.endereye.IEnderEyeThrow;
 import ninjabrainbot.model.input.IButtonInputHandler;
 
@@ -20,7 +20,7 @@ public class PreviewButtonInputHandler implements IButtonInputHandler {
 	}
 
 	@Override
-	public void onRemoveFossilButtonPressed() {
+	public void onRemoveDivineButtonPressed(IDivinable divineToRemove) {
 	}
 
 	@Override

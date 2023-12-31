@@ -17,49 +17,57 @@ public class DivineContext implements IDivineContext, IDisposable {
 	private final DiscretizedDensity discretizedAngularDensity;
 	private final DivineMonteCarloSimulator simulator;
 
-	public final DataComponent<Fossil> fossil;
-	private final DataComponent<FirstPortal> firstPortal;
-	private final ListComponent<BuriedTreasure> buriedTreasures;
+	private final ListComponent<IDivinable> divineObjects;
 
 	private final DataComponent<Boolean> measuringPortalOrientation;
 
 	private final DisposeHandler disposeHandler = new DisposeHandler();
 
 	public DivineContext(IDomainModel domainModel) {
-		fossil = new DataComponent<>(domainModel);
-        buriedTreasures = new ListComponent<>(domainModel, 2);
-        firstPortal = new DataComponent<>(domainModel);
+        divineObjects = new ListComponent<>(domainModel, 10);
 		measuringPortalOrientation = new DataComponent<>(domainModel, false);
         discretizedAngularDensity = new DiscretizedDensity(0, 2.0 * Math.PI);
-		simulator = new DivineMonteCarloSimulator();
-		disposeHandler.add(fossil.subscribeInternal(this::onChanged));
-		disposeHandler.add(buriedTreasures.subscribeInternal(this::onChanged));
-		disposeHandler.add(firstPortal.subscribeInternal(this::onChanged));
-	}
+		simulator = new DivineMonteCarloSimulator(divineObjects);
 
-	@Override
-	public Fossil getFossil() {
-		return fossil.get();
+		disposeHandler.add(divineObjects.subscribeInternal(this::onChanged));
 	}
 
 	@Override
 	public double relativeDensity() {
-		return fossil.get() == null ? 1.0 : (16.0 / 3.0);
+		Fossil fossil = (Fossil) getFirstDivineObjectOfType(DivineType.FOSSIL);
+		return fossil == null ? 1.0 : (16.0 / 3.0);
 	}
 
 	@Override
-	public IDataComponent<Fossil> fossil() {
-		return fossil;
+	public void addDivineObject(IDivinable newDivine) {
+		for (IDivinable oldDivine : divineObjects) {
+			if (newDivine.equals(oldDivine))
+				return;
+			if (newDivine.divineType() == oldDivine.divineType() && !oldDivine.divineType().allowMultiple()) {
+				divineObjects.replace(oldDivine, newDivine);
+				return;
+			}
+		}
+		divineObjects.add(newDivine);
 	}
 
 	@Override
-	public ListComponent<BuriedTreasure> buriedTreasures() {
-		return buriedTreasures;
+	public void removeDivineObject(IDivinable divineObject) {
+		divineObjects.remove(divineObject);
 	}
 
 	@Override
-	public IDataComponent<FirstPortal> firstPortal() {
-		return firstPortal;
+	public ListComponent<IDivinable> getDivineObjects() {
+		return divineObjects;
+	}
+
+	@Override
+	public IDivinable getFirstDivineObjectOfType(DivineType type) {
+		for (IDivinable divineObject : divineObjects) {
+			if (divineObject.divineType() == type)
+				return divineObject;
+		}
+		return null;
 	}
 
 	@Override
@@ -69,7 +77,7 @@ public class DivineContext implements IDivineContext, IDisposable {
 
 	@Override
 	public boolean hasDivine() {
-		return fossil.get() != null || buriedTreasures.get().size() > 0 || firstPortal.get() != null;
+		return divineObjects.size() > 0;
 	}
 
 	public double getDensityAtAngleBeforeSnapping(double phi) {
@@ -83,13 +91,14 @@ public class DivineContext implements IDivineContext, IDisposable {
 	 * (0,0)
 	 */
 	public BlindPosition getClosestCoords(double x, double z, double r) {
-		if (fossil.get() == null) {
+		Fossil fossil = (Fossil) getFirstDivineObjectOfType(DivineType.FOSSIL);
+		if (fossil == null) {
 			double multiplier = r / Coords.dist(x, z, 0, 0);
 			return new BlindPosition(x * multiplier, z * multiplier);
 		}
 		int n = Ring.get(0).numStrongholds;
 		double minDist2 = Double.MAX_VALUE;
-		int angleIndex = -4 + fossil.get().x;
+		int angleIndex = -4 + fossil.x;
 		if (angleIndex < 0) {
 			angleIndex += 16;
 		}
@@ -116,15 +125,7 @@ public class DivineContext implements IDivineContext, IDisposable {
 			long t0 = System.currentTimeMillis();
 
 			simulator.reset();
-			buriedTreasures.get().forEach(simulator::addDivineObject);
-			if (fossil.get() != null) {
-				simulator.addDivineObject(fossil.get());
-			}
-			if (firstPortal.get() != null) {
-				simulator.addDivineObject(firstPortal.get());
-			}
-
-			System.out.println("Updating " + simulator.divineObjects.size() + " divine objects");
+			System.out.println("Updating " + divineObjects.size() + " divine objects");
 			for (int i = 0; i < 100000 && simulator.shouldContinue(); i++) {
 				double phi = simulator.nextAngle();
 				addDensityThreeStrongholds(phi, 1);

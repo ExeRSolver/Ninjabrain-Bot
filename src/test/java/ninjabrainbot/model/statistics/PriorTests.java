@@ -54,7 +54,7 @@ class PriorTests {
 	@ValueSource(ints = { 0, 2, 6, 13, 15 })
 	void probabilitySumsToNumberOfStringholds_withFossilDivine(int fossil) {
 		Ring ring = Ring.get(0);
-		divineContext.fossil.set(new Fossil(fossil));
+		divineContext.addDivineObject(new Fossil(fossil));
 		IPrior prior = new Prior(0, 0, (int) Math.ceil(ring.outerRadiusPostSnapping), divineContext);
 
 		double totalProbability = 0;

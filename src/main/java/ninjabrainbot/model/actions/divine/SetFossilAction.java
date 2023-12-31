@@ -16,7 +16,7 @@ public class SetFossilAction implements IAction {
 
 	@Override
 	public void execute() {
-		divineContext.fossil().set(fossil);
+		divineContext.addDivineObject(fossil);
 	}
 
 }

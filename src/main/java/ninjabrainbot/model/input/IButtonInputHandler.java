@@ -1,6 +1,7 @@
 package ninjabrainbot.model.input;
 
 import ninjabrainbot.model.datastate.common.StructurePosition;
+import ninjabrainbot.model.datastate.divine.IDivinable;
 import ninjabrainbot.model.datastate.endereye.IEnderEyeThrow;
 
 public interface IButtonInputHandler {
@@ -11,7 +12,7 @@ public interface IButtonInputHandler {
 
 	void onRedoButtonPressed();
 
-	void onRemoveFossilButtonPressed();
+	void onRemoveDivineButtonPressed(IDivinable divineToRemove);
 
 	void onRemoveThrowButtonPressed(IEnderEyeThrow throwToRemove);
 

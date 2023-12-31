@@ -10,6 +10,7 @@ import ninjabrainbot.model.datastate.blind.BlindPosition;
 import ninjabrainbot.model.datastate.blind.BlindResult;
 import ninjabrainbot.model.datastate.common.IPlayerPosition;
 import ninjabrainbot.model.datastate.divine.DivineResult;
+import ninjabrainbot.model.datastate.divine.DivineType;
 import ninjabrainbot.model.datastate.divine.Fossil;
 import ninjabrainbot.model.datastate.divine.IDivineContext;
 import ninjabrainbot.model.datastate.endereye.IEnderEyeThrow;
@@ -97,7 +98,7 @@ public class Calculator implements ICalculator {
 
 	@Override
 	public DivineResult divine(IDivineContext divineContext) {
-		Fossil f = divineContext.getFossil();
+		Fossil f = (Fossil) divineContext.getFirstDivineObjectOfType(DivineType.FOSSIL);
 		return f != null ? new DivineResult(f) : null;
 	}
 

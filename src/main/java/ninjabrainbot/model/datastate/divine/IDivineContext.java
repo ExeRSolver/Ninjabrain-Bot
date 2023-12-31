@@ -6,13 +6,13 @@ import ninjabrainbot.model.domainmodel.IListComponent;
 
 public interface IDivineContext {
 
-	Fossil getFossil();
+	void addDivineObject(IDivinable divineObject);
 
-	IDataComponent<Fossil> fossil();
+	void removeDivineObject(IDivinable divineObject);
 
-	IListComponent<BuriedTreasure> buriedTreasures();
+	IListComponent<IDivinable> getDivineObjects();
 
-	IDataComponent<FirstPortal> firstPortal();
+	IDivinable getFirstDivineObjectOfType(DivineType type);
 
 	IDataComponent<Boolean> measuringPortalOrientation();
 
