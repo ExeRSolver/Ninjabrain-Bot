@@ -36,6 +36,7 @@ public class DivineMonteCarloSimulator {
 			--seedsRemaining;
 		}
 		strongholdAngleRng.setSeed(seed);
+		// Stronghold angles are offset 90 degrees from in-game yaw
 		return (strongholdAngleRng.nextDouble() * 3.141592653589793D * 2.0D + 3 * Math.PI / 2) % (2 * Math.PI);
 	}
 
