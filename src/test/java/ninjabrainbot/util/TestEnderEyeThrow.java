@@ -58,6 +58,11 @@ public class TestEnderEyeThrow implements IEnderEyeThrow {
 	}
 
 	@Override
+	public boolean isManualThrow() {
+		return false;
+	}
+
+	@Override
 	public double getStandardDeviation(StandardDeviationSettings standardDeviationHandler) {
 		return std;
 	}

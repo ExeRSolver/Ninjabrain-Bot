@@ -38,4 +38,9 @@ public class ManualEnderEyeThrow extends EnderEyeThrow {
 		return EnderEyeThrowType.Manual;
 	}
 
+	@Override
+	public boolean isManualThrow() {
+		return true;
+	}
+
 }

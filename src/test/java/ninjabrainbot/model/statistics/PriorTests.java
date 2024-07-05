@@ -29,9 +29,9 @@ class PriorTests {
 
 	@ParameterizedTest
 	@ValueSource(ints = { 0, 1 })
-	void probabilitySumsToNumberOfStringholds(int ringNumber) {
+	void probabilitySumsToNumberOfStrongholds(int ringNumber) {
 		Ring ring = Ring.get(ringNumber);
-		IPrior prior = new Prior(0, 0, (int) Math.ceil(ring.outerRadiusPostSnapping), divineContext);
+		IPrior prior = new Prior(0, 0, (int) Math.ceil(ring.outerRadiusPostSnapping), divineContext, true);
 
 		int totalStrongholds = 0;
 		for (Ring iteratingRing : new RingIterator()) {
@@ -55,7 +55,7 @@ class PriorTests {
 	void probabilitySumsToNumberOfStringholds_withFossilDivine(int fossil) {
 		Ring ring = Ring.get(0);
 		divineContext.fossil.set(new Fossil(fossil));
-		IPrior prior = new Prior(0, 0, (int) Math.ceil(ring.outerRadiusPostSnapping), divineContext);
+		IPrior prior = new Prior(0, 0, (int) Math.ceil(ring.outerRadiusPostSnapping), divineContext, true);
 
 		double totalProbability = 0;
 		for (Chunk chunk : prior.getChunks()) {
@@ -70,7 +70,7 @@ class PriorTests {
 	@ParameterizedTest
 	@CsvSource({ "128, 0, 3", "100, -100, 10", "-50, 111, 6" })
 	void getChunks_returnsCorrectChunkCoords(int x, int z, int radius) {
-		IPrior prior = new Prior(x, z, radius, divineContext);
+		IPrior prior = new Prior(x, z, radius, divineContext, true);
 
 		Set<Chunk> chunks = new HashSet<>();
 
@@ -89,8 +89,8 @@ class PriorTests {
 	@ParameterizedTest
 	@CsvSource({ "128, 0, 3", "100, -100, 10", "-50, 111, 6", "-150, -10, 20" })
 	void probabilityAtGivenCoordsIsIndependentOfRadiusOfPrior(int x, int z, int radius) {
-		IPrior prior0 = new Prior(x, z, 0, divineContext);
-		IPrior prior = new Prior(x, z, radius, divineContext);
+		IPrior prior0 = new Prior(x, z, 0, divineContext, true);
+		IPrior prior = new Prior(x, z, radius, divineContext, true);
 
 		Chunk chunk = null;
 		for (Chunk c : prior.getChunks()) {

@@ -45,4 +45,9 @@ public class NormalEnderEyeThrow extends EnderEyeThrow {
 		return altStandardDeviation ? EnderEyeThrowType.NormalWithAltStd : EnderEyeThrowType.Normal;
 	}
 
+	@Override
+	public boolean isManualThrow() {
+		return false;
+	}
+
 }

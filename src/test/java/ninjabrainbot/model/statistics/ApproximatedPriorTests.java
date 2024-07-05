@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Set;
 
 import ninjabrainbot.model.datastate.divine.DivineContext;
-import ninjabrainbot.model.datastate.statistics.ApproximatedPrior;
 import ninjabrainbot.model.datastate.statistics.IPrior;
 import ninjabrainbot.model.datastate.statistics.Prior;
 import ninjabrainbot.model.datastate.stronghold.Chunk;
@@ -32,9 +31,9 @@ class ApproximatedPriorTests {
 
 	@ParameterizedTest
 	@ValueSource(ints = { 0, 1, 2, 3 })
-	void probabilitySumsToNumberOfStringholds(int ringNumber) {
+	void probabilitySumsToNumberOfStrongholds(int ringNumber) {
 		Ring ring = Ring.get(ringNumber);
-		IPrior prior = new ApproximatedPrior(0, 0, (int) Math.ceil(ring.outerRadiusPostSnapping), divineContext);
+		IPrior prior = new Prior(0, 0, (int) Math.ceil(ring.outerRadiusPostSnapping), divineContext, true, 2);
 
 		int totalStrongholds = 0;
 		for (Ring iteratingRing : new RingIterator()) {
@@ -73,7 +72,7 @@ class ApproximatedPriorTests {
 	@ParameterizedTest
 	@CsvSource({ "128, 0, 3", "100, -100, 10", "-50, 111, 6" })
 	void getChunks_returnsCorrectChunkCoords(int x, int z, int radius) {
-		IPrior prior = new ApproximatedPrior(x, z, radius, divineContext);
+		IPrior prior = new Prior(x, z, radius, divineContext, true, 2);
 
 		Set<Chunk> chunks = new HashSet<>();
 
@@ -93,8 +92,8 @@ class ApproximatedPriorTests {
 	@ParameterizedTest
 	@CsvSource({ "128, 0, 3", "100, -100, 10", "-50, 111, 6", "-150, -10, 20" })
 	void probabilityAtGivenCoordsIsIndependentOfRadiusOfPrior(int x, int z, int radius) {
-		IPrior prior0 = new ApproximatedPrior(x, z, 0, divineContext);
-		IPrior prior = new ApproximatedPrior(x, z, radius, divineContext);
+		IPrior prior0 = new Prior(x, z, 0, divineContext, true, 2);
+		IPrior prior = new Prior(x, z, radius, divineContext, true, 2);
 
 		Chunk chunk = null;
 		for (Chunk c : prior.getChunks()) {
@@ -112,8 +111,8 @@ class ApproximatedPriorTests {
 		Ring ring = Ring.get(0);
 		int radius = (int) Math.ceil(ring.outerRadiusPostSnapping);
 
-		IPrior approximatedPrior = new ApproximatedPrior(0, 0, radius, divineContext);
-		IPrior truePrior = new Prior(0, 0, radius, divineContext);
+		IPrior approximatedPrior = new Prior(0, 0, radius, divineContext, true, 2);
+		IPrior truePrior = new Prior(0, 0, radius, divineContext, true);
 
 		Map<Chunk, Chunk> expectedChunks = new HashMap<>();
 		for (Chunk chunk : truePrior.getChunks()) {
@@ -134,8 +133,8 @@ class ApproximatedPriorTests {
 		double ringArea = Math.PI * (ring.outerRadiusPostSnapping * ring.outerRadiusPostSnapping - ring.innerRadiusPostSnapping * ring.innerRadiusPostSnapping);
 		double averageWeightInRing = ring.numStrongholds / ringArea;
 
-		IPrior approximatedPrior = new ApproximatedPrior(0, 0, radius, divineContext);
-		IPrior truePrior = new Prior(0, 0, radius, divineContext);
+		IPrior approximatedPrior = new Prior(0, 0, radius, divineContext, true, 2);
+		IPrior truePrior = new Prior(0, 0, radius, divineContext, true);
 
 		Map<Chunk, Chunk> expectedChunks = new HashMap<>();
 		for (Chunk chunk : truePrior.getChunks()) {

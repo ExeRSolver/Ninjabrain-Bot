@@ -27,8 +27,8 @@ public class Posterior {
 		this.standardDeviationSettings = standardDeviationSettings;
 		this.version = version;
 		double sigma0 = eyeThrows.get(0).getStandardDeviation(standardDeviationSettings);
-		prior = new RayApproximatedPrior(eyeThrows.get(0), Math.min(1.0, 30 * sigma0) / 180.0 * Math.PI, divineContext, version);
-		chunks = new ArrayList<Chunk>();
+		prior = new RayPrior(eyeThrows.get(0), Math.min(1.0, 30 * sigma0) / 180.0 * Math.PI, divineContext, version, !eyeThrows.get(0).isManualThrow());
+		chunks = new ArrayList<>();
 		double px = eyeThrows.get(0).xInOverworld();
 		double pz = eyeThrows.get(0).zInOverworld();
 		double maxDist = StrongholdConstants.getMaxDistance(px, pz) / 16.0;

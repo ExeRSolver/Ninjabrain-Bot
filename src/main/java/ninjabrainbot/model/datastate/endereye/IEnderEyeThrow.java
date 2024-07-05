@@ -23,6 +23,8 @@ public interface IEnderEyeThrow extends IOverworldRay {
 
 	EnderEyeThrowType getType();
 
+	boolean isManualThrow();
+
 	default IPlayerPosition getPlayerPosition() {
 		return new LimitedPlayerPosition(xInOverworld(), zInOverworld(), horizontalAngle());
 	}

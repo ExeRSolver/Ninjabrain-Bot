@@ -79,7 +79,7 @@ public class CalculatorManager implements ICalculatorManager, IDisposable {
 			blindResult.set(null);
 			return;
 		}
-		blindResult.set(calculator.blind(new BlindPosition(playerPosition.get()), divineContext));
+		blindResult.set(calculator.blind(new BlindPosition(playerPosition.get()), divineContext, true));
 	}
 
 	private void updateDivineResult() {

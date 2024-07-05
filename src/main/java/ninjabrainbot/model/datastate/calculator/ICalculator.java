@@ -13,7 +13,7 @@ public interface ICalculator {
 
 	ICalculatorResult triangulate(IReadOnlyList<IEnderEyeThrow> eyeThrows, IObservable<IPlayerPosition> playerPos, IDivineContext divineContext);
 
-	BlindResult blind(BlindPosition b, IDivineContext divineContext);
+	BlindResult blind(BlindPosition b, IDivineContext divineContext, boolean version1_13Plus);
 
 	DivineResult divine(IDivineContext divineContext);
 

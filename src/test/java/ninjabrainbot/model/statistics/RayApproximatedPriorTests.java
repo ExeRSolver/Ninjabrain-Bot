@@ -5,10 +5,7 @@ import java.util.Map;
 
 import ninjabrainbot.io.preferences.enums.McVersion;
 import ninjabrainbot.model.datastate.divine.DivineContext;
-import ninjabrainbot.model.datastate.statistics.ApproximatedPrior;
-import ninjabrainbot.model.datastate.statistics.IPrior;
-import ninjabrainbot.model.datastate.statistics.Prior;
-import ninjabrainbot.model.datastate.statistics.RayApproximatedPrior;
+import ninjabrainbot.model.datastate.statistics.*;
 import ninjabrainbot.model.datastate.stronghold.Chunk;
 import ninjabrainbot.model.datastate.stronghold.Ring;
 import ninjabrainbot.util.TestUtils;
@@ -28,7 +25,7 @@ class RayApproximatedPriorTests {
 		divineContext = new DivineContext(null);
 		Ring ring = Ring.get(1);
 		int radius = (int) Math.ceil(ring.outerRadiusPostSnapping);
-		truePrior = new Prior(0, 0, radius, divineContext);
+		truePrior = new Prior(0, 0, radius, divineContext, true);
 	}
 
 	@ParameterizedTest
@@ -39,8 +36,8 @@ class RayApproximatedPriorTests {
 		double ringArea = Math.PI * (ring.outerRadiusPostSnapping * ring.outerRadiusPostSnapping - ring.innerRadiusPostSnapping * ring.innerRadiusPostSnapping);
 		double averageWeightInRing = ring.numStrongholds / ringArea;
 
-		IPrior rayApproximatedPrior = new RayApproximatedPrior(TestUtils.createRay(x, z, angle), 10 * Math.PI / 180, divineContext, McVersion.PRE_119);
-		IPrior approximatedPrior = new ApproximatedPrior(0, 0, radius, divineContext);
+		IPrior rayApproximatedPrior = new RayPrior(TestUtils.createRay(x, z, angle), 10 * Math.PI / 180, divineContext, McVersion.PRE_119, true);
+		IPrior approximatedPrior = new Prior(0, 0, radius, divineContext, true, 2);
 
 		Map<Chunk, Chunk> expectedChunks = new HashMap<>();
 		for (Chunk chunk : approximatedPrior.getChunks()) {
@@ -119,7 +116,7 @@ class RayApproximatedPriorTests {
 		double ringArea = Math.PI * (ring.outerRadiusPostSnapping * ring.outerRadiusPostSnapping - ring.innerRadiusPostSnapping * ring.innerRadiusPostSnapping);
 		double averageWeightInRing = ring.numStrongholds / ringArea;
 
-		IPrior rayApproximatedPrior = new RayApproximatedPrior(TestUtils.createRay(x, z, angle), 10 * Math.PI / 180, divineContext, McVersion.PRE_119);
+		IPrior rayApproximatedPrior = new RayPrior(TestUtils.createRay(x, z, angle), 10 * Math.PI / 180, divineContext, McVersion.PRE_119, true);
 
 		Map<Chunk, Chunk> expectedChunks = new HashMap<>();
 		for (Chunk chunk : truePrior.getChunks()) {
@@ -156,7 +153,7 @@ class RayApproximatedPriorTests {
 		double ringArea = Math.PI * (ring.outerRadiusPostSnapping * ring.outerRadiusPostSnapping - ring.innerRadiusPostSnapping * ring.innerRadiusPostSnapping);
 		double averageWeightInRing = ring.numStrongholds / ringArea;
 
-		IPrior rayApproximatedPrior = new RayApproximatedPrior(TestUtils.createRay(x, z, angle), 10 * Math.PI / 180, divineContext, McVersion.PRE_119);
+		IPrior rayApproximatedPrior = new RayPrior(TestUtils.createRay(x, z, angle), 10 * Math.PI / 180, divineContext, McVersion.PRE_119, true);
 
 		Map<Chunk, Chunk> expectedChunks = new HashMap<>();
 		for (Chunk chunk : truePrior.getChunks()) {

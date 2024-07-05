@@ -55,21 +55,21 @@ public class Calculator implements ICalculator {
 	}
 
 	@Override
-	public BlindResult blind(BlindPosition b, IDivineContext divineContext) {
+	public BlindResult blind(BlindPosition b, IDivineContext divineContext, boolean version1_13Plus) {
 		long t0 = System.currentTimeMillis();
 		int distanceThreshold = 400;
 		int h = 2;
 		double phi_p = phi(b.x, b.z);
-		double probability = getHighrollProbability(b.x, b.z, distanceThreshold, divineContext);
+		double probability = getHighrollProbability(b.x, b.z, distanceThreshold, divineContext, version1_13Plus);
 		// difference in x direction
 		int deltaX1 = h;
 		int deltaZ1 = 0;
-		double probability1 = getHighrollProbability(b.x + deltaX1, b.z + deltaZ1, distanceThreshold, divineContext);
+		double probability1 = getHighrollProbability(b.x + deltaX1, b.z + deltaZ1, distanceThreshold, divineContext, version1_13Plus);
 		double probabilityDerivative1 = (probability1 - probability) / Math.sqrt(deltaX1 * deltaX1 + deltaZ1 * deltaZ1);
 		// difference in z direction
 		int deltaX2 = deltaZ1;
 		int deltaZ2 = -deltaX1;
-		double probability2 = getHighrollProbability(b.x + deltaX2, b.z + deltaZ2, distanceThreshold, divineContext);
+		double probability2 = getHighrollProbability(b.x + deltaX2, b.z + deltaZ2, distanceThreshold, divineContext, version1_13Plus);
 		double probabilityDerivative2 = (probability2 - probability) / Math.sqrt(deltaX1 * deltaX1 + deltaZ1 * deltaZ1);
 		double probabilityDerivative = Math.sqrt(probabilityDerivative1 * probabilityDerivative1 + probabilityDerivative2 * probabilityDerivative2);
 		double ninetiethPercentileDerivative = probabilityDerivative * Math.sqrt(0.1 / (2 * probability * probability * probability)) * distanceThreshold;
@@ -101,10 +101,10 @@ public class Calculator implements ICalculator {
 		return f != null ? new DivineResult(f) : null;
 	}
 
-	private double getHighrollProbability(double x, double z, int distanceThreshold, IDivineContext divineContext) {
+	private double getHighrollProbability(double x, double z, int distanceThreshold, IDivineContext divineContext, boolean version1_13Plus) {
 		double probability = 0;
 		Prior prior;
-		prior = new Prior((int) x * 8 / 16, (int) z * 8 / 16, distanceThreshold / 16 + 1, divineContext);
+		prior = new Prior((int) x * 8 / 16, (int) z * 8 / 16, distanceThreshold / 16 + 1, divineContext, version1_13Plus);
 		for (Chunk c : prior.getChunks()) {
 			double dx = x * 8 - c.x * 16 + 8;
 			double dz = z * 8 - c.z * 16 + 8;
